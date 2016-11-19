@@ -1,0 +1,24 @@
+unit UfrmCadastroPasto;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Cadastro, Buttons, ExtCtrls;
+
+type
+  TfrmCadastroPasto = class(TfrmCadastro)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmCadastroPasto: TfrmCadastroPasto;
+
+implementation
+
+{$R *.dfm}
+
+end.

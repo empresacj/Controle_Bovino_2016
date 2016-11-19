@@ -1,0 +1,128 @@
+unit UMesAno;
+
+interface
+
+uses
+  Types, Controls;
+
+type
+
+  TMesAno = class(TInterfacedObject)
+  private
+    FFechado: Boolean;
+    FMesSelecionado: integer;
+    FAnoSelecionado: integer;
+    function GetPrimeiroDia: TDate;
+    function GetUltimoDia: TDate;
+    function GetAsString: string;
+
+  public
+    constructor Create(Data: TDate); overload;
+    constructor Create(const Mes, Ano: integer); overload;
+
+    function SelecionarPorPopup(var Mes, Ano: Integer; PontoInicio: TPoint): boolean; overload;
+    function GetFechado: Boolean;
+    procedure SetFechado(const Value: Boolean);
+    function EstahNoPeriodo(const Data: TDate): boolean;
+
+    property AsString: string read GetAsString;
+  published
+    procedure Definir(const Mes, Ano: integer);
+    procedure Limpar;
+    function SelecionarPorPopup(PontoInicio: TPoint): boolean; overload;
+
+    property AnoSelecionado: integer read FAnoSelecionado write FAnoSelecionado;
+    property MesSelecionado: integer read FMesSelecionado write FMesSelecionado;
+    property Fechado: Boolean read GetFechado write SetFechado;
+    property UltimoDia: TDate read GetUltimoDia;
+    property PrimeiroDia: TDate read GetPrimeiroDia;
+
+
+//    property EventoValidacao: TValidateEvent read FEventoValidacao write FEventoValidacao;
+
+  end;
+
+implementation
+
+uses
+  SysUtils, DateUtils, UfrmSelecionaMes;
+
+{ TMesAno }
+
+constructor TMesAno.Create(Data: TDate);
+begin
+  Self.Definir(MonthOf(Data), YearOf(Data));
+end;
+
+constructor TMesAno.Create(const Mes, Ano: integer);
+begin
+  Self.Definir(Mes, Ano);
+end;
+
+procedure TMesAno.Definir(const Mes, Ano: integer);
+begin
+  Self.AnoSelecionado := Ano;
+  Self.MesSelecionado := Mes;
+end;
+
+function TMesAno.EstahNoPeriodo(const Data: TDate): boolean;
+begin
+  Result := (Data >= Self.PrimeiroDia) and (Data <= Self.UltimoDia);
+end;
+
+function TMesAno.GetAsString: string;
+begin
+  Result := Format('%.2d/%.4d', [Self.MesSelecionado, Self.AnoSelecionado]);
+end;
+
+function TMesAno.GetFechado: Boolean;
+begin
+  Result := FFechado;
+end;
+
+function TMesAno.GetPrimeiroDia: TDate;
+begin
+  Result := 0;
+  
+  if (Self.MesSelecionado > 0) and (Self.AnoSelecionado > 0) then
+   begin
+    Result := StartOfAMonth(Self.AnoSelecionado, Self.MesSelecionado);
+   end;
+end;
+
+function TMesAno.GetUltimoDia: TDate;
+begin
+  Result := 0;
+  
+  if (Self.MesSelecionado > 0) and (Self.AnoSelecionado > 0) then
+   begin
+    Result := EndOfAMonth(Self.AnoSelecionado, Self.MesSelecionado);
+   end;
+end;
+
+procedure TMesAno.Limpar;
+begin
+  Self.Definir(0, 0);
+  Self.FFechado := False;
+end;
+
+function TMesAno.SelecionarPorPopup(PontoInicio: TPoint): boolean;
+begin
+  Result := Self.SelecionarPorPopup(Self.FMesSelecionado, Self.FAnoSelecionado, PontoInicio);
+end;
+
+procedure TMesAno.SetFechado(const Value: Boolean);
+begin
+  FFechado := Value;
+end;
+
+function TMesAno.SelecionarPorPopup(var Mes, Ano: Integer;
+  PontoInicio: TPoint): boolean;
+begin
+  Result := TfrmSelecionaMes.PopupSelect(Mes, Ano, PontoInicio, nil);
+
+  if Result then
+   Self.Definir(Mes, Ano);
+end;
+
+end.

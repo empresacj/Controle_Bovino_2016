@@ -1,0 +1,311 @@
+﻿unit UfrmInternalLog;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, ExtCtrls;
+
+type
+  TInternalLog = class(TForm)
+    lstCriados: TListBox;
+    lstDestruidos: TListBox;
+    pnl1: TPanel;
+    lblCriados: TLabel;
+    lblDestruidos: TLabel;
+  private
+    { Private declarations }
+    FListaObjetos, FListaCriados, FListaDestruidos: TStringList;
+    FCount, FCountD: Integer;
+    FControlesVisuaisHabilitados: boolean;
+    class function GetFormInstance: TInternalLog;
+    procedure AtualizarTela;
+    function ObtenhaIndice(Guid: string): integer;
+  protected
+    function AdicionarInstancia(ClassName: string): string;
+    procedure RemoverInstancia(Guid: string);
+    procedure SincronizarControlesVisuais;
+
+    property ControlesVisuaisHabilitados: boolean read FControlesVisuaisHabilitados write FControlesVisuaisHabilitados;
+  public
+    { Public declarations }
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+
+    class procedure HabilitarTrace(const ASomenteConta: boolean);
+    class procedure DesabilitarTrace;
+    class procedure DesabilitarControlesVisuais;
+    class procedure HabilitarControlesVisuais(const Sincronizar: boolean);
+    class function CreateGuid: string;
+    class function CriarInstancia(AClass: TClass): string;
+    class function DestruirInstancia(Guid: string): string;
+    class procedure SalvarLogCriados(const NomeArquivo: string);
+  end;
+
+var
+  TraceAtivo: boolean;
+
+implementation
+
+{$R *.dfm}
+
+uses
+  ComObj, ActiveX;
+
+var
+  FForm: TInternalLog;
+  SomenteConta: boolean;
+
+function TInternalLog.AdicionarInstancia(ClassName: string): string;
+begin
+  if not TraceAtivo then Exit;
+
+  if SomenteConta then
+   begin
+    Inc(FCount);
+    //lblCriados.Caption := IntToStr(FCount);
+   end
+  else
+   begin
+    if Self.ControlesVisuaisHabilitados then
+     lstCriados.Items.Add(ClassName)
+    else
+     FListaCriados.Add(ClassName);
+
+    Result := Self.CreateGuid;
+    FListaObjetos.Add(Result);
+
+    AtualizarTela;
+   end;
+end;
+
+constructor TInternalLog.Create(AOwner: TComponent);
+begin
+  inherited;
+  FListaObjetos    := TStringList.Create;
+  FListaCriados    := TStringList.Create;
+  FListaDestruidos := TStringList.Create;
+  FCount           := 0;
+
+  TraceAtivo      := {$IFDEF TRACE_ACTIVE}True{$ELSE}False{$ENDIF};
+end;
+
+class function TInternalLog.CreateGuid: string;
+var
+  ID: TGUID;
+begin
+  Result := '';
+  if CoCreateGuid(ID) = S_OK then
+    Result := GUIDToString(ID);
+end;
+
+class function TInternalLog.CriarInstancia(AClass: TClass): string;
+var
+  objForm: TInternalLog;
+begin
+  objForm := Self.GetFormInstance;
+
+  Result := objForm.AdicionarInstancia(AClass.ClassName);
+end;
+
+destructor TInternalLog.Destroy;
+begin
+  FListaCriados.Free;
+  FListaDestruidos.Free;
+  FListaObjetos.Free;
+  inherited;
+end;
+
+class function TInternalLog.DestruirInstancia(Guid: string): string;
+var
+  objForm: TInternalLog;
+begin
+  objForm := Self.GetFormInstance;
+
+  objForm.RemoverInstancia(Guid);
+end;
+
+class procedure TInternalLog.DesabilitarControlesVisuais;
+begin
+  Self.GetFormInstance.ControlesVisuaisHabilitados := False;
+end;
+
+class procedure TInternalLog.DesabilitarTrace;
+begin
+  TraceAtivo := False;
+
+  if SomenteConta then
+   begin
+    ShowMessageFmt('Objetos na memória: %d - Objetos destruidos: %d', [Self.GetFormInstance.FCount, Self.GetFormInstance.FCountD]);
+   end;
+end;
+
+class procedure TInternalLog.HabilitarControlesVisuais(const Sincronizar: boolean);
+begin
+  if not Self.GetFormInstance.ControlesVisuaisHabilitados and Sincronizar then
+   Self.GetFormInstance.SincronizarControlesVisuais;
+
+  Self.GetFormInstance.ControlesVisuaisHabilitados := True;
+end;
+
+class procedure TInternalLog.HabilitarTrace(const ASomenteConta: boolean);
+begin
+  if not TraceAtivo then
+   begin
+    if Self.GetFormInstance.ControlesVisuaisHabilitados then
+     begin
+      Self.GetFormInstance.lstCriados.Clear;
+      Self.GetFormInstance.lstDestruidos.Clear;
+     end
+    else
+     begin
+      Self.GetFormInstance.FListaCriados.Clear;
+      Self.GetFormInstance.FListaDestruidos.Clear;
+     end;
+   end;
+
+  TraceAtivo   := True;
+  SomenteConta := ASomenteConta;
+
+  if SomenteConta then
+   begin
+    Self.GetFormInstance.FCount := 0;
+    Self.GetFormInstance.FCountD := 0;
+   end;
+end;
+
+procedure TInternalLog.AtualizarTela;
+begin
+  if SomenteConta then
+   begin
+//    if FCount mod 100000 = 0 then
+//     Application.ProcessMessages;
+   end
+  else
+   begin
+    if FCount = 50 then
+     begin
+      if Self.ControlesVisuaisHabilitados then
+       begin
+        if lstCriados.Count > 10 then
+         lstCriados.TopIndex := lstCriados.Count - 10;
+
+        if lstDestruidos.Count > 10 then
+         lstDestruidos.TopIndex := lstDestruidos.Count - 10;
+       end;
+
+      Application.ProcessMessages;
+      FCount := 0;
+     end
+    else Inc(FCount);
+   end;
+end;
+
+class function TInternalLog.GetFormInstance: TInternalLog;
+begin
+  if not Assigned(FForm) then
+   FForm := TInternalLog.Create(Application);
+
+  if TraceAtivo and not SomenteConta then
+   FForm.Show;
+
+  Result := FForm;
+end;
+
+function TInternalLog.ObtenhaIndice(Guid: string): integer;
+var
+  i: Integer;
+begin
+  Result := -1;
+
+  if Trim(Guid) <> '' then
+   for i := FListaObjetos.Count - 1 downto 0 do
+    if FListaObjetos[i] = Guid then
+     begin
+      Result := i;
+      Break;
+     end;
+end;
+
+procedure TInternalLog.RemoverInstancia(Guid: string);
+var
+  iIndice: Integer;
+begin
+  if not TraceAtivo then Exit;
+
+  if SomenteConta then
+   begin
+    Dec(FCount);
+    Inc(FCountD);
+//    lblCriados.Caption := IntToStr(FCount);
+//    lblDestruidos.Caption := IntToStr(FCountD);
+   end
+  else
+   begin
+    iIndice := ObtenhaIndice(Guid);
+
+    if iIndice >= 0 then
+     begin
+      if Self.ControlesVisuaisHabilitados then
+       begin
+        lstDestruidos.Items.Add(Format('%s - %s', [lstCriados.Items[iIndice], Guid]));
+        lstCriados.Items.Delete(iIndice);
+       end
+      else
+       begin
+        FListaDestruidos.Add(Format('%s - %s', [FListaCriados[iIndice], Guid]));
+        FListaCriados.Delete(iIndice);
+       end;
+
+      FListaObjetos.Delete(iIndice);
+
+      if Self.ControlesVisuaisHabilitados then
+       begin
+        if lstDestruidos.Count = 100000 then
+         begin
+          lstDestruidos.Items.SaveToFile(Format('C:\Tron\Destruidos-%s.log', [FormatDateTime('yyyy-mm-dd hh-nn', Now)]));
+          lstDestruidos.Clear;
+         end;
+       end
+      else
+       begin
+        if FListaDestruidos.Count = 100000 then
+         begin
+          FListaDestruidos.SaveToFile(Format('C:\Tron\Destruidos-%s.log', [FormatDateTime('yyyy-mm-dd hh-nn', Now)]));
+          FListaDestruidos.Clear;
+         end;
+       end;
+     end
+    else
+     begin
+      if Self.ControlesVisuaisHabilitados then
+       lstDestruidos.Items.Add(Format('Objeto %s não encontrado', [Guid]))
+      else
+       FListaDestruidos.Add(Format('Objeto %s não encontrado', [Guid]));
+     end;
+
+    lblCriados.Caption := IntToStr(FListaObjetos.Count);
+
+    if Self.ControlesVisuaisHabilitados then
+     lblDestruidos.Caption := IntToStr(lstDestruidos.Count)
+    else lblDestruidos.Caption := IntToStr(FListaDestruidos.Count);
+
+    AtualizarTela;
+   end;
+end;
+
+class procedure TInternalLog.SalvarLogCriados(const NomeArquivo: string);
+begin
+  Self.GetFormInstance.lstCriados.Items.SaveToFile(NomeArquivo);
+end;
+
+procedure TInternalLog.SincronizarControlesVisuais;
+begin
+  lstCriados.Items.Clear;
+  lstCriados.Items.AddStrings(FListaCriados);
+
+  lstDestruidos.Items.Clear;
+  lstDestruidos.Items.AddStrings(FListaDestruidos);
+end;
+
+end.

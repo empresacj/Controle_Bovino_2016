@@ -1,0 +1,24 @@
+unit UfrmMovimentacaoPropriedade;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoPropriedade = class(TfrmMovimentacao)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoPropriedade: TfrmMovimentacaoPropriedade;
+
+implementation
+
+{$R *.dfm}
+
+end.

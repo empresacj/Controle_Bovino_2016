@@ -1,0 +1,313 @@
+unit UCdsFunctions;
+
+interface
+
+uses
+  DBClient, DB, SimpleDS;
+
+type
+  TCdsFunctions = class
+  public
+    class function CreateAggregate(Cds: TClientDataSet; const Expression: string): TAggregate; overload;
+    class procedure DefineIndex(Cds: TClientDataSet; const IndexName: string; const Fields, DescFields: array of string;
+      const GroupingLevel: integer = 0; Options: TIndexOptions = []); overload;
+    class procedure GetClientDataSet(DataSet: TDataSet; ClientDataSet: TClientDataSet; const MemoOnDemand: Boolean = False); overload;
+    class function GetClientDataSet(DataSet: TDataSet): TClientDataSet; overload;
+    class function GetClientDataSet(DataSet: TDataSet; const IndexName: string;
+      const IndexFields: array of string; const GroupingLevel: integer = 0;
+      Options: TIndexOptions = []): TClientDataSet; overload;
+  published
+    class procedure AddFields(Cds: TClientDataSet; const FieldName: string;
+      const FieldClass: TFieldClass; const FieldKind: TFieldKind = fkData;
+      const Size: integer = 0; const ProviderFlags : TProviderFlags = []);
+    class procedure CreateAggregate(Cds: TClientDataSet; const Expression,
+      IndexName: string; const GroupingLevel: integer;
+      const AggregateName: String = ''); overload;
+    class procedure CreateDataSet(ClientDataSet: TClientDataSet);
+    class procedure CopyData(Source, Dest: TDataSet; const AllRecords: Boolean = True;
+      const EmptyDest: Boolean = False; const ShowFieldMemo : Boolean = True; const ForceFieldCount: Boolean=false);
+    class procedure DefineIndex(Cds: TClientDataSet; const IndexName: string; const Fields: array of string;
+      const GroupingLevel: integer = 0; Options: TIndexOptions = []); overload;
+    class procedure DefineOrder(Cds: TClientDataSet; const Field: string;
+      const Shift: boolean; const CheckDescField: boolean = True); overload;
+    class procedure Filter(Cds: TClientDataSet; const Filter: string);
+    class procedure FreeClientDataSet(var Cds: TClientDataSet);
+    class procedure GetClientDataSet(DataSet: TDataSet; ClientDataSet: TClientDataSet; const IndexName: string;
+      const IndexFields: array of string; const GroupingLevel: integer = 0; Options: TIndexOptions = []); overload;
+    class procedure SetIndex(Cds: TClientDataSet; const IndexName: string);
+    class procedure SetVisible(Cds: TClientDataSet; const Visible: Boolean);
+  end;
+
+implementation
+
+uses Classes, SysUtils, Provider, UStringFunctions, USistemaException;
+
+{ TCdsFunctions }
+
+class procedure TCdsFunctions.AddFields(Cds: TClientDataSet; const FieldName: string;
+  const FieldClass: TFieldClass; const FieldKind: TFieldKind; const Size: integer;
+  const ProviderFlags : TProviderFlags);
+var
+  Field: TField;
+begin
+  Field               := FieldClass.Create(Cds);
+  Field.FieldKind     := FieldKind;
+  Field.Size          := Size;
+  Field.FieldName     := FieldName;
+  Field.DataSet       := Cds;
+  Field.ProviderFlags := ProviderFlags;
+end;
+
+class function TCdsFunctions.CreateAggregate(Cds: TClientDataSet;
+  const Expression: string): TAggregate;
+begin
+  // Criando aggregate
+  Result := Cds.Aggregates.Add;
+  Result.Expression := Expression;
+end;
+
+class procedure TCdsFunctions.CopyData(Source, Dest: TDataSet;
+  const AllRecords, EmptyDest: Boolean; const ShowFieldMemo : Boolean; const ForceFieldCount: Boolean);
+var
+  i: Integer;
+begin
+  if (Source.FieldCount <> Dest.FieldCount) and (not ForceFieldCount)  then
+   raise ESistemaException.Create('Source and Dest must have the same field count.');
+
+  if EmptyDest and (Dest is TClientDataSet) then
+   TClientDataSet(Dest).EmptyDataSet;
+
+  if not Source.IsEmpty then
+   begin
+    Source.DisableControls;
+    Dest.DisableControls;
+
+    try
+     if AllRecords then
+      Source.First;
+
+     repeat
+      Dest.Append;
+
+      for i := 0 to Source.FieldCount - 1 do
+       if (Source.Fields[i].FieldKind = fkData) and not Source.Fields[i].IsNull then
+        //Se o campo não for memo deve setar o valor ou então se o campo for memo e pedir para mostrar o valor (o default é que deve mostrar)
+        if ((Source.Fields[i] is TMemoField) and (ShowFieldMemo)) or not (Source.Fields[i] is TMemoField) then
+          if not ForceFieldCount or (Dest.Fields.IndexOf(Dest.Fields.FindField(Source.Fields[i].FieldName)) > -1) then
+           Dest.FieldByName(Source.Fields[i].FieldName).Value := Source.Fields[i].Value;
+      Dest.Post;
+
+      if AllRecords then
+       Source.Next;
+     until Source.EOF or not AllRecords;
+    finally
+     Dest.EnableControls;
+     Source.EnableControls;
+    end;
+   end;
+end;
+
+class procedure TCdsFunctions.CreateAggregate(Cds: TClientDataSet;
+  const Expression, IndexName: string; const GroupingLevel: integer; const AggregateName: String);
+var
+  objAgg: TAggregate;
+begin
+  // Obtendo novo aggregate
+  objAgg := TCdsFunctions.CreateAggregate(Cds, Expression);
+  // Configurando agrupamento
+  objAgg.IndexName := IndexName;
+  objAgg.AggregateName := AggregateName;
+  objAgg.GroupingLevel := GroupingLevel;
+  // Ativando aggreates
+  objAgg.Active        := True;
+  Cds.AggregatesActive := True;
+end;
+
+class procedure TCdsFunctions.CreateDataSet(ClientDataSet: TClientDataSet);
+begin
+  if ClientDataSet.Active then ClientDataSet.EmptyDataSet
+  else ClientDataSet.CreateDataSet;
+end;
+
+class procedure TCdsFunctions.DefineIndex(Cds: TClientDataSet;
+  const IndexName: string; const Fields: array of string;
+  const GroupingLevel: integer; Options: TIndexOptions);
+begin
+  Self.DefineIndex(Cds, IndexName, Fields, [], GroupingLevel, Options);
+end;
+
+class procedure TCdsFunctions.DefineIndex(Cds: TClientDataSet;
+  const IndexName: string; const Fields, DescFields: array of string;
+  const GroupingLevel: integer; Options: TIndexOptions);
+var
+  sInd, sDes: string;
+begin
+  // Transformado array em string
+  sInd := TStringFunctions.ArrayToStr(Fields, ';');
+  sDes := TStringFunctions.ArrayToStr(DescFields, ';');
+  // Adicionando índice
+  Cds.IndexName := '';
+  Cds.AddIndex(IndexName, sInd, Options, sDes, '', GroupingLevel);
+  Cds.IndexName := IndexName;
+end;
+
+class procedure TCdsFunctions.DefineOrder(Cds: TClientDataSet; const Field: string;
+  const Shift: boolean; const CheckDescField: boolean);
+const
+  IND_NAME = 'indTmp';
+var
+  ind: TIndexDef;
+  stl, stlDsc: TStringList;
+begin
+  if not Assigned(Cds) or (Cds.FieldByName(Field).FieldKind = fkLookup) then
+   Exit;
+
+  Cds.DisableControls;
+
+  // Limpando índice
+  Cds.IndexName := '';
+
+  // Criando StringLists para armazenar campos dos índices
+  stl    := TStringList.Create;
+  stlDsc := TStringList.Create;
+  stl.Delimiter    := ';';
+  stlDsc.Delimiter := ';';
+
+  // Verificando se o índice já existe
+  if Cds.IndexDefs.IndexOf(IND_NAME) >= 0 then
+   begin
+    ind := Cds.IndexDefs.Find(IND_NAME);
+    // Armazenando nome dos campos do índice
+    stl.DelimitedText    := ind.Fields;
+    stlDsc.DelimitedText := ind.DescFields;
+    // Apagando índice
+    Cds.DeleteIndex(IND_NAME);
+   end ;
+
+  Cds.IndexDefs.Update;
+
+  // Criando índice
+  ind      := Cds.IndexDefs.AddIndexDef;
+  ind.Name := IND_NAME;
+
+  // Shift = True então adiciona campo no índice
+  if Shift then
+   begin
+    // Verificando se o campo já existe no índice
+    if (stl.IndexOf(Field) >= 0) then
+     begin
+      // Verificando se está ordenado em ordem decrescente
+      if (stlDsc.IndexOf(Field) = -1) then
+       // Adicionando campo na lista de ordem decrescente
+       stlDsc.Add(Field)
+      else
+       // Excluindo campo do índice descendente
+       stlDsc.Delete(stlDsc.IndexOf(Field));
+
+      // Redefinindo lista no índice
+      ind.DescFields := stlDsc.DelimitedText;
+     end
+    else  stl.Add(Field); // Adicionando campos na lista de índices
+
+    // Definindo índice
+    ind.Fields := stl.DelimitedText;
+   end
+  else
+   begin
+    // Verificando se será um índice normal ou decrescente
+    if CheckDescField and (stl.IndexOf(Field) >= 0) and (stlDsc.IndexOf(Field) = -1) then
+     ind.DescFields := Field
+    else ind.DescFields := '';
+
+    ind.Fields := Field;
+   end;
+
+  // Destruindo stringlists
+  FreeAndNil(stl);
+  FreeAndNil(stlDsc);
+
+  Cds.EnableControls;
+  Cds.IndexName := ind.Name;
+end;
+
+class function TCdsFunctions.GetClientDataSet(DataSet: TDataSet;
+  const IndexName: string; const IndexFields: array of string;
+  const GroupingLevel: integer; Options: TIndexOptions): TClientDataSet;
+begin
+  // Obtendo ClientDataSet
+  Result := TClientDataSet.Create(nil);
+  Self.GetClientDataSet(DataSet, Result, IndexName, IndexFields, GroupingLevel, Options);
+end;
+
+class function TCdsFunctions.GetClientDataSet(DataSet: TDataSet): TClientDataSet;
+begin
+  // Configurando ClientDataSet
+  Result := TClientDataSet.Create(nil);
+  Self.GetClientDataSet(DataSet, Result);
+end;
+
+class procedure TCdsFunctions.GetClientDataSet(DataSet: TDataSet;
+  ClientDataSet: TClientDataSet; const IndexName: string;
+  const IndexFields: array of string; const GroupingLevel: integer;
+  Options: TIndexOptions);
+begin
+  // Obtendo ClientDataSet
+  Self.GetClientDataSet(DataSet, ClientDataSet);
+  // Verificando se precisa defininir índice
+  if TStringFunctions.IsFull(IndexName) then
+   TCdsFunctions.DefineIndex(ClientDataSet, IndexName, IndexFields, GroupingLevel, Options);
+end;
+
+class procedure TCdsFunctions.GetClientDataSet(DataSet: TDataSet;
+  ClientDataSet: TClientDataSet; const MemoOnDemand: Boolean);
+var
+  objDsp: TDataSetProvider;
+begin
+  if ClientDataSet.Active then ClientDataSet.Close;
+
+  // Configurando DataSetProvider
+  objDsp         := TDataSetProvider.Create(nil);
+  objDsp.DataSet := DataSet;
+  //Essa configuração faz com que melhore o desempenho ao trabalhar com campos memo.
+  if MemoOnDemand then
+   objDsp.Options := [poFetchBlobsOnDemand];
+  // Configurando ClientDataSet
+  ClientDataSet.SetProvider(objDsp);
+  // Abrindo ClientDataSet;
+  ClientDataSet.Open;
+  // Eliminando provider
+  ClientDataSet.SetProvider(nil);
+  FreeAndNil(objDsp);
+end;
+
+class procedure TCdsFunctions.Filter(Cds: TClientDataSet;
+  const Filter: string);
+begin
+  Cds.Filtered := False;
+  Cds.Filter   := Filter;
+  Cds.Filtered := True;
+end;
+
+class procedure TCdsFunctions.FreeClientDataSet(var Cds: TClientDataSet);
+begin
+  if Cds.Active then Cds.Close;
+  FreeAndNil(Cds);
+end;
+
+class procedure TCdsFunctions.SetIndex(Cds: TClientDataSet;
+  const IndexName: string);
+begin
+  Cds.IndexName := IndexName;
+  Cds.SetKey;
+end;
+
+class procedure TCdsFunctions.SetVisible(Cds: TClientDataSet;
+  const Visible: Boolean);
+var
+ i: Integer;
+begin
+  for i := 0 to Cds.Fields.Count - 1 do
+   Cds.Fields[i].Visible := Visible;
+end;
+
+end.

@@ -1,0 +1,24 @@
+unit UfrmCadastroPropriedade;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Cadastro, Buttons, ExtCtrls;
+
+type
+  TfrmCadastroPropriedade = class(TfrmCadastro)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmCadastroPropriedade: TfrmCadastroPropriedade;
+
+implementation
+
+{$R *.dfm}
+
+end.

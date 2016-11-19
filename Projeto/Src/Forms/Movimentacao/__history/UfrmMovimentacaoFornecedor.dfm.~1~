@@ -1,0 +1,30 @@
+inherited frmMovimentacao2: TfrmMovimentacao2
+  Caption = 'frmMovimentacao2'
+  ExplicitWidth = 724
+  ExplicitHeight = 421
+  PixelsPerInch = 96
+  TextHeight = 14
+  inherited pnl: TPanel
+    object frmMovimentacaoFornecedor: TcxGrid
+      Left = 1
+      Top = 1
+      Width = 716
+      Height = 347
+      Align = alClient
+      TabOrder = 1
+      ExplicitLeft = 234
+      ExplicitTop = 96
+      ExplicitWidth = 250
+      ExplicitHeight = 200
+      object frmMovimentacaoFornecedorDBTableView1: TcxGridDBTableView
+        Navigator.Buttons.CustomButtons = <>
+        DataController.Summary.DefaultGroupSummaryItems = <>
+        DataController.Summary.FooterSummaryItems = <>
+        DataController.Summary.SummaryGroups = <>
+      end
+      object frmMovimentacaoFornecedorLevel1: TcxGridLevel
+        GridView = frmMovimentacaoFornecedorDBTableView1
+      end
+    end
+  end
+end

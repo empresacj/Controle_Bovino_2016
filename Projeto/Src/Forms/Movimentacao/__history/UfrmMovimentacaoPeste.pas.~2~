@@ -1,0 +1,32 @@
+unit UfrmMovimentacaoPeste;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoPeste = class(TfrmMovimentacao)
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoPeste: TfrmMovimentacaoPeste;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmMovimentacaoPeste.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  inherited;
+  frmMovimentacaoPeste := nil;
+end;
+
+end.

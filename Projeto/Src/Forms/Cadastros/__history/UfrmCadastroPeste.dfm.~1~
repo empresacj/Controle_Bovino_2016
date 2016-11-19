@@ -1,0 +1,17 @@
+inherited frmCadastroPeste: TfrmCadastroPeste
+  Caption = 'frmCadastroPeste'
+  ExplicitWidth = 416
+  ExplicitHeight = 237
+  PixelsPerInch = 96
+  TextHeight = 14
+  inherited pnlBotoes: TPanel
+    inherited btnGravar: TSpeedButton
+      Left = 150
+      ExplicitLeft = 150
+    end
+    inherited btnCancelar: TSpeedButton
+      Left = 200
+      ExplicitLeft = 200
+    end
+  end
+end

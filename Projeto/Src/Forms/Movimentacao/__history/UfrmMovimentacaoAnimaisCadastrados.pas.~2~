@@ -1,0 +1,32 @@
+unit UfrmMovimentacaoAnimaisCadastrados;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoAnimaisCadastrados = class(TfrmMovimentacao)
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoAnimaisCadastrados: TfrmMovimentacaoAnimaisCadastrados;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmMovimentacaoAnimaisCadastrados.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  inherited;
+  frmMovimentacaoAnimaisCadastrados := nil;
+end;
+
+end.

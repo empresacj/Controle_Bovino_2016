@@ -1,0 +1,24 @@
+unit UfrmCadastroComprador;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Cadastro, Buttons, ExtCtrls;
+
+type
+  TfrmCadastroComprador = class(TfrmCadastro)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmCadastroComprador: TfrmCadastroComprador;
+
+implementation
+
+{$R *.dfm}
+
+end.

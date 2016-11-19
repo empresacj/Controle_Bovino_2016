@@ -1,0 +1,32 @@
+unit UfrmMovimentacaoFreezer;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoFreezer = class(TfrmMovimentacao)
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoFreezer: TfrmMovimentacaoFreezer;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmMovimentacaoFreezer.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  inherited;
+  frmMovimentacaoFreezer := nil;
+end;
+
+end.

@@ -1,0 +1,100 @@
+unit UfrmDialog;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, JvExControls, JvSpeedButton, JvNavigationPane, ActnList, ExtCtrls, cxControls, cxContainer, cxEdit, cxGraphics, UNumberFunctions;
+
+
+type
+  TFormDialog = class(TForm)
+    pnlHeader: TJvNavPanelHeader;
+    btnClose: TJvSpeedButton;
+    acl: TActionList;
+    actClose: TAction;
+    actConfirm: TAction;
+    Panel1: TPanel;
+    procedure actCloseExecute(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure actConfirmExecute(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+    FNotifyMessage: Cardinal;
+    FHasMessage: boolean;
+    procedure SetNotifyMessage(const Value: Cardinal);
+
+    property HasMessage: boolean read FHasMessage;
+  protected
+    function GetMessageLParam: integer; virtual;
+    function GetMessageWParam: integer; virtual;
+
+    property NotifyMessage: Cardinal read FNotifyMessage write SetNotifyMessage;
+  public
+    { Public declarations }
+    class function DialogSelect: boolean; virtual; abstract;
+    class function PopupSelect(const StartPoint: TPoint): boolean; virtual; abstract;
+    procedure Initialize; virtual;
+  published
+    function Confirm: boolean; virtual;
+  end;
+
+var
+  FormDialog: TFormDialog;
+
+implementation
+
+uses UAppFunctions;
+
+{$R *.dfm}
+
+procedure TFormDialog.actCloseExecute(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
+
+procedure TFormDialog.actConfirmExecute(Sender: TObject);
+begin
+  if Self.Confirm then
+   ModalResult := mrOK;
+end;
+
+function TFormDialog.Confirm: boolean;
+begin
+  Result := True;
+end;
+
+procedure TFormDialog.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  if (ModalResult = mrOK) and Self.HasMessage then
+   TAppFunctions.BroadcastMessage(Self.NotifyMessage, Self.GetMessageWParam, Self.GetMessageLParam, True);
+end;
+
+procedure TFormDialog.FormShow(Sender: TObject);
+begin
+  Self.Initialize;
+end;
+
+function TFormDialog.GetMessageLParam: integer;
+begin
+  Result := 0;
+end;
+
+function TFormDialog.GetMessageWParam: integer;
+begin
+  Result := 0;
+end;
+
+procedure TFormDialog.Initialize;
+begin
+  pnlHeader.Caption := Self.Caption;
+end;
+
+procedure TFormDialog.SetNotifyMessage(const Value: Cardinal);
+begin
+  FNotifyMessage   := Value;
+  Self.FHasMessage := Value > WM_USER;
+end;
+
+end.

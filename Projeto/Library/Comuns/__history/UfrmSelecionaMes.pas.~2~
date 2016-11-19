@@ -1,0 +1,327 @@
+unit UfrmSelecionaMes;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ComCtrls, JvExControls, JvButton, JvTransparentButton, 
+    Grids, ActnList, Buttons, UfrmDialog,
+  JvSpeedButton, JvNavigationPane, ExtCtrls, cxControls, cxContainer, cxEdit, cxGraphics, UNumberFunctions,
+ cxTextEdit, cxLookAndFeels, cxLookAndFeelPainters, dxSkinsCore,
+  dxSkinsDefaultPainters;
+
+type
+  TValidateEvent = procedure(const Year, Month: integer; var Accept: boolean;
+                      var ErrorMessage: string) of object;
+
+  TfrmSelecionaMes = class(TFormDialog)
+    edtAno: TcxTextEdit;
+    stgMes: TStringGrid;
+    btnAvancar: TSpeedButton;
+    btnVoltar: TSpeedButton;
+    actBack: TAction;
+    actGo: TAction;
+    procedure stgMesDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect;
+      State: TGridDrawState);
+    procedure FormCreate(Sender: TObject);
+    procedure edtAnoEnter(Sender: TObject);
+    procedure stgMesDblClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure stgMesKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure actBackExecute(Sender: TObject);
+    procedure actGoExecute(Sender: TObject);
+  private
+    FMonth: integer;
+    FYear: integer;
+    FOnValidate: TValidateEvent;
+    FSearching: boolean;
+    FSearchBuffer: string;
+    { Private declarations }
+    procedure DoSearch(Key: char);
+    procedure EndSearch;
+    procedure LoadMonths;
+    procedure SetMonth(const Value: integer);
+    procedure SetYear(const Value: integer);
+
+//    property MonthList: TTronStringList read FMonthList write FMonthList;
+  protected
+    class function CreateForm(var Year: Integer; var Month: Integer;
+      ValidateEvent: TValidateEvent): TfrmSelecionaMes;
+    procedure NotifyForms;
+
+    function GetMessageLParam: integer; override;
+    function GetMessageWParam: integer; override;
+    property SearchBuffer: string read FSearchBuffer write FSearchBuffer;
+    property Searching: boolean read FSearching;
+  public
+    { Public declarations }
+    procedure Initialize; override;
+  published
+    class function DialogSelect(var Month, Year: Integer;
+      ValidateEvent: TValidateEvent = nil): boolean;
+    class function PopupSelect(var Month, Year: Integer; StartPoint: TPoint;
+      ValidateEvent: TValidateEvent = nil): boolean;
+
+    function Confirm: Boolean; override;
+
+    property Month: integer read FMonth write SetMonth;
+    property Year: integer read FYear write SetYear;
+
+    property OnValidate: TValidateEvent read FOnValidate write FOnValidate;
+  end;
+
+implementation
+
+uses Math, DateUtils, DB, UMsgFunctions, UStringFunctions,
+  StrUtils;
+
+const
+  MIN_YEAR = 1980;
+  MAX_YEAR = 2050;
+  MIN_MONTH = 1;
+  MAX_MONTH = 12;
+
+{$R *.dfm}
+
+procedure TfrmSelecionaMes.actBackExecute(Sender: TObject);
+begin
+  inherited;
+  // Decrementando o mês
+  Self.Year := Self.Year - 1;
+end;
+
+procedure TfrmSelecionaMes.actGoExecute(Sender: TObject);
+begin
+  inherited;
+  // Incrementando o ano
+  Self.Year  := Self.Year + 1;
+end;
+
+function TfrmSelecionaMes.Confirm: Boolean;
+var
+  sErrorMessage: string;
+begin
+  Result := inherited Confirm;
+
+  // Calculando mês selecionado
+   Self.Month := (stgMes.Row * 4) + (stgMes.Col + 1);
+
+  if Result then
+   if Assigned(Self.OnValidate) then
+    Self.OnValidate(Self.Year, Self.Month, Result, sErrorMessage);
+
+  if not Result then
+   TMsgFunctions.Error(IfThen(TStringFunctions.IsFull(sErrorMessage), sErrorMessage, 'Não é possível escolher o mês/ano selecionados.'));
+end;
+
+class function TfrmSelecionaMes.CreateForm(var Year: Integer; var Month: Integer;
+      ValidateEvent: TValidateEvent): TfrmSelecionaMes;
+begin
+  Result       := TfrmSelecionaMes.Create(nil);
+  Result.Month := Month;
+  Result.Year  := Year;
+  // Verificando se foi passado evento de validação
+  if Assigned(ValidateEvent) then
+    Result.OnValidate := ValidateEvent;
+end;
+
+class function TfrmSelecionaMes.DialogSelect(var Month: Integer; var Year: Integer; ValidateEvent: TValidateEvent): boolean;
+var
+  objForm: TfrmSelecionaMes;
+begin
+  objForm := Self.CreateForm(Year, Month, ValidateEvent);
+
+  Result  := objForm.ShowModal = MROK;
+
+  if Result then
+   begin
+    Month := objForm.Month;
+    Year  := objForm.Year;
+   end;
+
+  objForm.Free;
+end;
+
+procedure TfrmSelecionaMes.DoSearch(Key: char);
+var
+  sBuffer: string;
+  iMonth: integer;
+begin
+  // Realiza pesquisa na stringgrid
+  if not Self.FSearching then
+   Self.FSearching := True;
+
+  // Montado buffer de pesquisa
+  sBuffer := SearchBuffer + Uppercase(Key);
+  // Efetuando a pesquisa
+//  iMonth := Self.MonthList.IndexOf(sBuffer, [loPartialKey]) + 1;
+
+  // Verificando se houve resultado
+  if iMonth > 0 then
+   begin
+    Self.SearchBuffer := sBuffer;
+    Self.SetMonth(iMonth);
+   end;
+end;
+
+procedure TfrmSelecionaMes.edtAnoEnter(Sender: TObject);
+begin
+  stgMes.SetFocus;
+end;
+
+procedure TfrmSelecionaMes.EndSearch;
+begin
+ // Finaliza a pesquisa
+ Self.FSearching   := False;
+ Self.SearchBuffer := '';
+end;
+
+procedure TfrmSelecionaMes.FormCreate(Sender: TObject);
+begin
+  // Selecionando, previamente, mês/ano atuais
+  Self.Month := MonthOf(Date);
+  Self.Year  := YearOf(Date);
+  // Criando lista de meses
+//  Self.FMonthList := TTronStringList.Create;
+end;
+
+procedure TfrmSelecionaMes.FormDestroy(Sender: TObject);
+begin
+//  Self.FMonthList.Free;
+end;
+
+function TfrmSelecionaMes.GetMessageLParam: integer;
+begin
+  Result := Self.Year;
+end;
+
+function TfrmSelecionaMes.GetMessageWParam: integer;
+begin
+  Result := Self.Month;
+end;
+
+procedure TfrmSelecionaMes.Initialize;
+begin
+  inherited;
+  Self.LoadMonths;
+
+  Self.Month := Self.Month;
+  Self.Year  := Self.Year;
+
+//  Self.NotifyMessage := WM_CHANGEMONTHYEAR;
+end;
+
+procedure TfrmSelecionaMes.LoadMonths;
+var
+  i, iRow, iCol: Integer;
+begin
+  // Jogando meses no stringgrid
+  iRow := 0;
+  iCol := 0;
+//  for i := Low(MONTHSLITTLE) to High(MONTHSLITTLE) do
+//   begin
+//    // Adicionando mês na lista para pesquisa
+//    Self.MonthList.Add(Uppercase(MONTHSLITTLE[i]));
+//
+//    stgMes.Cells[iCol, iRow] := MONTHSLITTLE[i];
+//
+//    if (i mod 4) = 0 then
+//     begin
+//      Inc(iRow);
+//      iCol := 0;
+//     end
+//    else Inc(iCol);
+//   end;
+end;
+
+procedure TfrmSelecionaMes.NotifyForms;
+begin
+//  TAppFunctions.BroadcastMessage(WM_CHANGEMONTHYEAR, Self.Month, Self.Year, True);
+end;
+
+class function TfrmSelecionaMes.PopupSelect(var Month, Year: Integer;
+  StartPoint: TPoint; ValidateEvent: TValidateEvent): boolean;
+var
+  objForm: TfrmSelecionaMes;
+begin
+  objForm := Self.CreateForm(Year, Month, ValidateEvent);
+
+  // Definindo para que o formulário seja posicionado nas coordenadas definidas
+  objForm.Position := poDesigned;
+
+  objForm.Left := StartPoint.X;
+  objForm.Top  := StartPoint.Y - objForm.Height;
+
+  Result := objForm.ShowModal = mrOK;
+
+  if Result then
+   begin
+    Month := objForm.Month;
+    Year  := objForm.Year;
+   end;
+
+  objForm.Free;
+end;
+
+procedure TfrmSelecionaMes.SetMonth(const Value: integer);
+begin
+  if Value in [MIN_MONTH..MAX_MONTH] then
+   begin
+    FMonth := Value;
+
+    stgMes.Row := Ceil(FMonth / 4) - 1;
+    stgMes.Col := IfThen((FMonth mod 4) = 0, 3, (FMonth mod 4) - 1)
+   end;
+end;
+
+procedure TfrmSelecionaMes.SetYear(const Value: integer);
+begin
+  // O ano deve estar na faixa aceita
+  if (Value >= MIN_YEAR) and (Value <= MAX_YEAR) then
+   begin
+    FYear       := Value;
+    // Jogando valor no caption
+    edtAno.Text := IntToStr(FYear);
+   end;
+end;
+
+procedure TfrmSelecionaMes.stgMesDblClick(Sender: TObject);
+begin
+  actConfirm.Execute;
+end;
+
+procedure TfrmSelecionaMes.stgMesDrawCell(Sender: TObject; ACol, ARow: Integer;
+  Rect: TRect; State: TGridDrawState);
+var
+  iX, iY: integer;
+begin
+  // Limpando
+  stgMes.Canvas.FillRect(Rect);
+
+  // Verificando se a célula está com foco para definir a conta a pintar
+  if State = [gdSelected..gdFocused] then
+   stgMes.Canvas.Brush.Color := clHighlight
+  else stgMes.Canvas.Brush.Color := clWhite;
+
+  // Definindo estilo de pintura e desenhando retângula
+  stgMes.Canvas.Brush.Style := bsSolid;
+  stgMes.Canvas.Rectangle(Rect);
+
+  // Cálcula para definir coordenadas centralizadas
+  // Posicão = Posição inicial + Posição de centro da área - Metade do tamanho do texto
+  iX := Rect.Left + ((Rect.Right - Rect.Left) div 2) - (stgMes.Canvas.TextWidth(stgMes.Cells[ACol, ARow]) div 2);
+  iY := Rect.Top + ((Rect.Bottom - Rect.Top) div 2) - (stgMes.Canvas.TextHeight(stgMes.Cells[ACol, ARow]) div 2);
+
+  // Desenhando o texto
+  stgMes.Canvas.TextOut(iX, iY, stgMes.Cells[ACol, ARow]);
+end;
+
+procedure TfrmSelecionaMes.stgMesKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Chr(Key) in ['A'..'Z', 'a'..'z', '0'..'9'] then
+   DoSearch(Chr(Key))
+  else EndSearch;
+end;
+
+end.

@@ -1,0 +1,72 @@
+program Bovino;
+
+uses
+  Forms,
+  UfrmSplash in '..\Src\Forms\UfrmSplash.pas' {frmSplash},
+  UfrmPrincipalBovino in '..\Src\Forms\UfrmPrincipalBovino.pas' {frmPrincipalBovino},
+  Cadastro in '..\Library\Class Cad\Cadastro.pas' {frmCadastro},
+  Movimentacao in '..\Library\Class Cad\Movimentacao.pas' {frmMovimentacao},
+  UDicionario in '..\Library\Comuns\UDicionario.pas',
+  UIntObserver in '..\Library\Comuns\UIntObserver.pas',
+  UMesAno in '..\Library\Comuns\UMesAno.pas',
+  UPersistentObject in '..\Library\Comuns\UPersistentObject.pas',
+  UPersistentObjectDBX in '..\Library\Comuns\UPersistentObjectDBX.pas',
+  USistemaException in '..\Library\Comuns\USistemaException.pas',
+  UControle in '..\Library\Controladores\UControle.pas',
+  USistemaControle in '..\Library\Controladores\USistemaControle.pas',
+  UCdsFunctions in '..\Library\Functions\UCdsFunctions.pas',
+  UDateTimeFunctions in '..\Library\Functions\UDateTimeFunctions.pas',
+  UDBFunctions in '..\Library\Functions\UDBFunctions.pas',
+  UDialogFunctions in '..\Library\Functions\UDialogFunctions.pas',
+  UMsgFunctions in '..\Library\Functions\UMsgFunctions.pas',
+  UNumberFunctions in '..\Library\Functions\UNumberFunctions.pas',
+  UObjectFunctions in '..\Library\Functions\UObjectFunctions.pas',
+  URegFunctions in '..\Library\Functions\URegFunctions.pas',
+  USistemaFunctions in '..\Library\Functions\USistemaFunctions.pas',
+  UStringFunctions in '..\Library\Functions\UStringFunctions.pas',
+  UdbExpressFunctions in '..\Library\Functions\UdbExpressFunctions.pas',
+  UdmConnection in '..\Library\Dm\UdmConnection.pas' {dmConnection: TDataModule},
+  UfrmCadastroPropriedade in '..\Src\Forms\Cadastros\UfrmCadastroPropriedade.pas' {frmCadastroPropriedade},
+  UfrmMovimentacaoPropriedade in '..\Src\Forms\Movimentacao\UfrmMovimentacaoPropriedade.pas' {frmMovimentacaoPropriedade},
+  UfrmMovimentacaoUsuario in '..\Src\Forms\Movimentacao\UfrmMovimentacaoUsuario.pas' {frmMovimentacaoUsuario},
+  UfrmMovimentacaoProprietario in '..\Src\Forms\Movimentacao\UfrmMovimentacaoProprietario.pas' {frmMovimentacaoProprietario},
+  UfrmMovimentacaoResponsavel in '..\Src\Forms\Movimentacao\UfrmMovimentacaoResponsavel.pas' {frmMovimentacaoResponsavel},
+  UfrmMovimentacaoCriador in '..\Src\Forms\Movimentacao\UfrmMovimentacaoCriador.pas' {frmMovimentacaoCriador},
+  UfrmMovimentacaoFornecedor in '..\Src\Forms\Movimentacao\UfrmMovimentacaoFornecedor.pas' {frmMovimentacaoFornecedor},
+  UfrmMovimentacaoComprador in '..\Src\Forms\Movimentacao\UfrmMovimentacaoComprador.pas' {frmMovimentacaoComprador},
+  UfrmCadastroUsuario in '..\Src\Forms\Cadastros\UfrmCadastroUsuario.pas' {frmCadastroUsuario},
+  UfrmCadastroProprietario in '..\Src\Forms\Cadastros\UfrmCadastroProprietario.pas' {frmCadastroProprietario},
+  UfrmCadastroResponsavel in '..\Src\Forms\Cadastros\UfrmCadastroResponsavel.pas' {frmCadastroResponsavel},
+  UfrmCadastroCriador in '..\Src\Forms\Cadastros\UfrmCadastroCriador.pas' {frmCadastroCriador},
+  UfrmCadastroComprador in '..\Src\Forms\Cadastros\UfrmCadastroComprador.pas' {frmCadastroComprador},
+  UfrmCadastroFornecedor in '..\Src\Forms\Cadastros\UfrmCadastroFornecedor.pas' {frmCadastroFornecedor},
+  UfrmMovimentacaoPasto in '..\Src\Forms\Movimentacao\UfrmMovimentacaoPasto.pas' {frmMovimentacaoPasto},
+  UfrmCadastroPasto in '..\Src\Forms\Cadastros\UfrmCadastroPasto.pas' {frmCadastroPasto},
+  UfrmMovimentacaoRacasAnimais in '..\Src\Forms\Movimentacao\UfrmMovimentacaoRacasAnimais.pas' {frmMovimentacaoRacasAnimais},
+  UfrmCadastroRacaAnimal in '..\Src\Forms\Cadastros\UfrmCadastroRacaAnimal.pas' {frmCadastroRacaAnimal},
+  UfrmMovimentacaoVacina in '..\Src\Forms\Movimentacao\UfrmMovimentacaoVacina.pas' {frmMovimentacaoVacina},
+  UfrmCadastroVacina in '..\Src\Forms\Cadastros\UfrmCadastroVacina.pas' {frmCadastroVacina},
+  UfrmMovimentacaoAnimaisCadastrados in '..\Src\Forms\Movimentacao\UfrmMovimentacaoAnimaisCadastrados.pas' {frmMovimentacaoAnimaisCadastrados},
+  UfrmCadastroAnimal in '..\Src\Forms\Cadastros\UfrmCadastroAnimal.pas' {frmCadastroAnimal},
+  UfrmMovimentacaoPeste in '..\Src\Forms\Movimentacao\UfrmMovimentacaoPeste.pas' {frmMovimentacaoPeste},
+  UfrmCadastroPeste in '..\Src\Forms\Cadastros\UfrmCadastroPeste.pas' {frmCadastroPeste},
+  UfrmMovimentacaoTanqueLeite in '..\Src\Forms\Movimentacao\UfrmMovimentacaoTanqueLeite.pas' {frmMovimentacaoTanqueLeite},
+  UfrmCadastroTanqueLeite in '..\Src\Forms\Cadastros\UfrmCadastroTanqueLeite.pas' {frmCadastroTanqueLeite},
+  UfrmMovimentacaoFreezer in '..\Src\Forms\Movimentacao\UfrmMovimentacaoFreezer.pas' {frmMovimentacaoFreezer},
+  UfrmCadastroFreezer in '..\Src\Forms\Cadastros\UfrmCadastroFreezer.pas' {frmCadastroFreezer},
+  UfrmMovimentacaoBalanca in '..\Src\Forms\Movimentacao\UfrmMovimentacaoBalanca.pas' {frmMovimentacaoBalanca},
+  UfrmCadastroBalanca in '..\Src\Forms\Cadastros\UfrmCadastroBalanca.pas' {frmCadastroBalanca},
+  UfrmMovimentacaoMarcas in '..\Src\Forms\Movimentacao\UfrmMovimentacaoMarcas.pas' {frmMovimentacaoMarcas},
+  UfrmCadastroMarcas in '..\Src\Forms\Cadastros\UfrmCadastroMarcas.pas' {frmCadastroMarcas},
+  UfrmCadastroCidade in '..\Src\Forms\Cadastros\UfrmCadastroCidade.pas' {frmCadastroCidade},
+  UfrmMovimentacaoCidade in '..\Src\Forms\Movimentacao\UfrmMovimentacaoCidade.pas' {frmMovimentacaoCidade};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TdmConnection, dmConnection);
+  Application.CreateForm(TfrmSplash, frmSplash);
+  Application.Run;
+end.

@@ -1,0 +1,32 @@
+unit UfrmMovimentacaoBalanca;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoBalanca = class(TfrmMovimentacao)
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoBalanca: TfrmMovimentacaoBalanca;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmMovimentacaoBalanca.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  inherited;
+  frmMovimentacaoBalanca := nil;
+end;
+
+end.

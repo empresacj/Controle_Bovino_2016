@@ -1,0 +1,25 @@
+unit UfrmTeste;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Mov, JvDockTree, JvDockControlForm, JvDockVIDStyle, JvDockVSNetStyle,
+  JvComponentBase, TabListN, DB, UfraExportGridData, Buttons, ExtCtrls;
+
+type
+  TfrmMov1 = class(TfrmMov)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMov1: TfrmMov1;
+
+implementation
+
+{$R *.dfm}
+
+end.

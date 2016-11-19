@@ -1,0 +1,41 @@
+unit USistemaFunctions;
+
+interface
+
+uses Forms, Classes, Controls;
+
+type
+  TSistemaFunctions = class(TPersistent)
+  published
+    class function ExecForm(FormClass: TFormClass; var Reference; const SelectCompany: Boolean = False; const SelectMonth: Boolean = False): Boolean;
+  end;
+
+implementation
+
+uses UStringFunctions, SysUtils, Variants, Math, StrUtils;
+
+{ TSistemaFunctions }
+
+class function TSistemaFunctions.ExecForm(FormClass: TFormClass; var Reference;
+  const SelectCompany, SelectMonth: Boolean): Boolean;
+begin
+  Result := False;
+
+  if TForm(Reference) = nil then
+   Application.CreateForm(FormClass, Reference);
+
+  if TForm(Reference).FormStyle = fsMDIChild then
+   begin
+    TForm(Reference).BorderStyle := bsSizeable;
+    TForm(Reference).WindowState := wsMaximized;
+    TForm(Reference).Show;
+    Result := True;
+   end
+  else
+   begin
+    TForm(Reference).Show;
+    Result := mrOK;
+   end;
+end;
+
+end.

@@ -1,0 +1,24 @@
+unit UfrmMovimentacaoPeste;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoPeste = class(TfrmMovimentacao)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoPeste: TfrmMovimentacaoPeste;
+
+implementation
+
+{$R *.dfm}
+
+end.

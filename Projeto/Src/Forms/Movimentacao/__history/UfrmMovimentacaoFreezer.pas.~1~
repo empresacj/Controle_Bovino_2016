@@ -1,0 +1,24 @@
+unit UfrmMovimentacaoFreezer;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoFreezer = class(TfrmMovimentacao)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoFreezer: TfrmMovimentacaoFreezer;
+
+implementation
+
+{$R *.dfm}
+
+end.

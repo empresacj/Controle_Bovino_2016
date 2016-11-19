@@ -1,0 +1,24 @@
+unit UdmConnection;
+
+interface
+
+uses
+  SysUtils, Classes, DBXDevartInterBase, DB, SqlExpr;
+
+type
+  TDataModule1 = class(TDataModule)
+    sqlSistema: TSQLConnection;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  DataModule1: TDataModule1;
+
+implementation
+
+{$R *.dfm}
+
+end.

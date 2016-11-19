@@ -1,0 +1,24 @@
+unit UfrmMovimentacaoTanqueLeite;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoTanqueLeite = class(TfrmMovimentacao)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoTanqueLeite: TfrmMovimentacaoTanqueLeite;
+
+implementation
+
+{$R *.dfm}
+
+end.

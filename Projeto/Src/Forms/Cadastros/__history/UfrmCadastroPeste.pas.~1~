@@ -1,0 +1,24 @@
+unit UfrmCadastroPeste;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Cadastro, Buttons, ExtCtrls;
+
+type
+  TfrmCadastroPeste = class(TfrmCadastro)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmCadastroPeste: TfrmCadastroPeste;
+
+implementation
+
+{$R *.dfm}
+
+end.

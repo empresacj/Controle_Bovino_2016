@@ -1,0 +1,276 @@
+unit USistemaControle;
+
+interface
+
+uses UControle, UMesAno, SqlExpr, UfrmSelecionaEmpresa,
+     Controls, UTronLicence, DBClient, DBXCommon, Classes;
+
+type
+
+  //Classe que vai controlar informações importantes no contexto da aplicação.
+  TSistemaControle = class (TControle)
+  private
+    FMesAno: TMesAno;
+    FVerificarMesAnteriorAoFechamento: Boolean;
+    FUnidade: Integer;
+    FCliente: Integer;
+    FCurrentTransaction: TDBXTransaction;
+
+    function MesFechadoParaLancamento(const iCodigoEmpresa: Integer; const MesAno: TMesAno; iCodigoAreaAtuacao: Integer): Boolean;
+    function GetCodigoCliente: string;
+  protected
+
+    procedure SetSQLConnection(const Value: TSQLConnection); override;
+    function GetTipo: String; virtual; abstract;
+
+    property VerificarMesAnteriorAoFechamento: Boolean read FVerificarMesAnteriorAoFechamento write FVerificarMesAnteriorAoFechamento;
+    property CurrentTransaction: TDBXTransaction read FCurrentTransaction;
+  public
+    constructor Create(SQLConnection: TSQLConnection); override;
+    destructor Destroy; override;
+    procedure CopiarQuery(const Message: string);
+    // Métodos utilizado para definir a empresa selecionada no sistema
+    function SelecionarEmpresa(const CodigoEmpresa: Integer): Boolean; overload; virtual;
+    function SelecionarEmpresa: TfrmSelecionaEmpresaClass; overload; virtual; abstract;
+    function ModulosBloqueados(const NomeFormulario: String): Boolean;
+    function ExistePeriodoFechado(const CodigoEmpresa: Integer; const DataInicial, DataFinal: TDateTime): TStringList;
+    procedure VerificarFechamentoDoMes(const iCodigoEmpresa, iCodigoAreaAtuacao: Integer);
+    function MesAnoFechado(const iCodigoEmpresa: Integer; const MesAno: TMesAno; iCodigoAreaAtuacao: Integer): Boolean;
+    procedure SelecionarPreferenciasGerais;
+    procedure SelecionarIntegracaoContabil(const Data: TDate; const VerificarPeriodoContabil : Boolean = True); virtual;
+    procedure DefinirCodigoCliente(const Unidade, Cliente: Integer);
+    function StartNewTransaction: TDBXTransaction; overload;
+    function StartNewTransaction(const Isolation: integer): TDBXTransaction; overload;
+    function InTransaction: boolean;
+    procedure StartTransaction; overload;
+    procedure StartTransaction(const Isolation: integer); overload;
+    procedure Commit(var Transaction: TDBXTransaction); overload;
+    procedure Commit; overload;
+    procedure Rollback(var Transaction: TDBXTransaction); overload;
+    procedure Rollback; overload;
+    procedure ReportFileDeviceCreate(Sender: TObject);
+
+    property Unidade: Integer read FUnidade;
+    property Cliente: Integer read FCliente;
+    property CodigoCliente: string read GetCodigoCliente;
+  published
+    // Tipo do sistema: Contabilidade -> C| Escrita Fiscal -> E| Folha de Pagamento -> F
+    property Tipo: String read GetTipo;
+
+    // Mes ano selecionado no sistema
+    property MesAno: TMesAno read FMesAno write FMesAno;
+  end;
+
+var
+  Sistema: TSistemaControle;
+
+implementation
+
+uses SysUtils, UdbExpressFunctions, UIntMesAno, Clipbrd, ppReport, ppTypes, ppXlsDevice,
+     UDateTimeFunctions;
+
+{ TSistemaControle }
+
+procedure TSistemaControle.Commit(var Transaction: TDBXTransaction);
+begin
+  Self.SQLConnection.CommitFreeAndNil(Transaction);
+end;
+
+procedure TSistemaControle.Commit;
+begin
+  if Self.InTransaction then
+   Self.Commit(Self.FCurrentTransaction);
+end;
+
+procedure TSistemaControle.CopiarQuery(const Message: string);
+begin
+  Clipboard.AsText := Message;
+end;
+
+constructor TSistemaControle.Create(SQLConnection: TSQLConnection);
+begin
+  inherited;
+  FMesAno := TMesAno.Create(Date);
+  IMesAno(FMesAno)._AddRef;
+end;
+
+procedure TSistemaControle.DefinirCodigoCliente(const Unidade,
+  Cliente: Integer);
+begin
+  FUnidade := Unidade;
+  FCliente := Cliente;
+end;
+
+destructor TSistemaControle.Destroy;
+begin
+  inherited;
+end;
+
+function TSistemaControle.ExistePeriodoFechado(const CodigoEmpresa: Integer; const DataInicial, DataFinal: TDateTime): TStringList;
+var
+  i:Integer;
+  MesAno: TMesAno;
+  Date: TDateTime;
+  Data: String;
+begin
+  Result := TStringList.Create;
+  MesAno := TMesAno.Create(DataInicial);
+  Date   := DataInicial;
+
+//  while Date <= DataFinal do
+//   begin
+//    if MesAnoFechado(CodigoEmpresa, MesAno, 5) then
+//     begin
+//      Data := (IntToStr(TDateTimeFunctions.MonthofMonth(Date)) + '/' + IntToStr(Year(Date)));
+//      Result.Add(Data);
+//     end;
+//
+//    Date := IncMonth(Date);
+//    MesAno := TMesAno.Create(Date);
+//   end;
+end;
+
+function TSistemaControle.GetCodigoCliente: string;
+begin
+  Result := Format('%.2d-%.5d', [Self.Unidade, Self.Cliente]);
+end;
+
+function TSistemaControle.InTransaction: boolean;
+begin
+  Result := Self.SQLConnection.InTransaction;
+end;
+
+function TSistemaControle.MesFechadoParaLancamento(const iCodigoEmpresa: Integer; const MesAno: TMesAno; iCodigoAreaAtuacao: Integer): Boolean;
+var
+ qry: TSQLQuery;
+begin
+  qry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self.SQLConnection) as TSQLQuery;
+
+  qry.SQL.Add('SELECT BloMesAnoEmpAreAtu           ');
+  qry.SQL.Add('FROM TBLBLOMESANOEMPAREATU B        ');
+  qry.SQL.Add('WHERE B.CodEmp = :iCodEmpEsc AND    ');
+  qry.SQL.Add('      B.CodAreAtu = :iCodAreAtu AND ');
+  qry.SQL.Add('      B.BloMesAnoEmpAreAtu = ''S''  ');
+
+  if Self.VerificarMesAnteriorAoFechamento then
+   begin
+    qry.SQL.Add('AND B.DtaBloMesAnoEmpAreAtu >= :dDtaBloMesAno     ');
+    qry.ParamByName('dDtaBloMesAno').AsDate := EncodeDate(MesAno.AnoSelecionado, MesAno.MesSelecionado, 1);
+   end
+  else
+   begin
+    qry.SQL.Add('AND EXTRACT (MONTH FROM B.DtaBloMesAnoEmpAreAtu) = :iMes AND EXTRACT (YEAR FROM B.DtaBloMesAnoEmpAreAtu) = :iAno');
+    qry.ParamByName('iMes').AsInteger := MesAno.MesSelecionado;
+    qry.ParamByName('iAno').AsInteger := MesAno.AnoSelecionado;
+   end;
+
+  qry.ParamByName('iCodEmpEsc').AsInteger := iCodigoEmpresa;
+  qry.ParamByName('iCodAreAtu').AsInteger := iCodigoAreaAtuacao;
+
+  qry.Open;
+
+  Result := not (qry.IsEmpty or (qry.FieldByName('BLOMESANOEMPAREATU').AsString = 'N'));
+
+  FreeAndNil(qry);
+end;
+
+function TSistemaControle.ModulosBloqueados(const NomeFormulario: String): Boolean;
+var
+ qry: TSQLQuery;
+begin
+  qry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self.SQLConnection) as TSQLQuery;
+
+  qry.SQL.Add('SELECT MODBLOMAN                    ');
+  qry.SQL.Add('FROM TBLMOD                         ');
+  qry.SQL.Add('WHERE NOMFORMOD = :sNomeFormulario  ');
+  qry.SQL.Add('  AND CODAREATU = 5                 ');
+
+  qry.ParamByName('sNomeFormulario').AsString := NomeFormulario;
+  qry.Open;
+
+  Result := ((not qry.IsEmpty) and (qry.FieldByName('MODBLOMAN').AsString = 'S'));
+end;
+
+procedure TSistemaControle.ReportFileDeviceCreate(Sender: TObject);
+begin
+  if TppReport(Sender).FileDevice is TppXlsDeviceBase then
+   begin
+    TppReport(Sender).XLSSettings.ExportComponents    := [ecText, ecImage, ecRichText, ecBarCode, ecTable, ecOther];
+    TppReport(Sender).XLSSettings.IncludeSingleHeader := True;
+   end;
+
+  if TppReport(Sender).FileDevice is TppXlsDataDevice then
+   begin
+    TppXlsDataDevice(TppReport(Sender).FileDevice).DefaultBands := [btDetail, btGroupHeader, btGroupFooter, btSummary];
+//    TppReportFunctions.ConfigureXLSDataExport(TppReport(Sender));
+   end;
+end;
+
+procedure TSistemaControle.Rollback;
+begin
+  if Self.InTransaction then
+   Self.Rollback(Self.FCurrentTransaction);
+end;
+
+procedure TSistemaControle.Rollback(var Transaction: TDBXTransaction);
+begin
+  if Self.SQLConnection.InTransaction then
+   Self.SQLConnection.RollbackFreeAndNil(Transaction);
+end;
+
+/// <summary>
+/// Método para definir a empresa selecionada no sistema
+/// </summary>
+/// <param name="CodigoEmpresa">Codigo da empresa selecionada</param>
+/// <returns>Retorna True se conseguiu definir a empresa e False caso contrário</returns>
+function TSistemaControle.SelecionarEmpresa(
+  const CodigoEmpresa: Integer): Boolean;
+begin
+//  Result := Self.EmpresaSelecionada.Find(CodigoEmpresa);
+ //Preferencias Gerais
+//  Self.SelecionarPreferenciasGerais;
+end;
+
+procedure TSistemaControle.SetSQLConnection(const Value: TSQLConnection);
+begin
+  inherited;
+//  FEmpresaSelecionada._SQLConnection := Value;
+//  FIntegracaoContabil.SQLConnection := Value;
+end;
+
+function TSistemaControle.StartNewTransaction: TDBXTransaction;
+begin
+  Result := Self.SQLConnection.BeginTransaction;
+end;
+
+procedure TSistemaControle.StartTransaction;
+begin
+  Self.FCurrentTransaction := Self.StartNewTransaction;
+end;
+
+function TSistemaControle.MesAnoFechado(const iCodigoEmpresa: Integer;
+  const MesAno: TMesAno; iCodigoAreaAtuacao: Integer): Boolean;
+begin
+  Result := (MesAno.MesSelecionado > 0) and MesFechadoParaLancamento(iCodigoEmpresa, MesAno, iCodigoAreaAtuacao);
+end;
+
+procedure TSistemaControle.VerificarFechamentoDoMes(const iCodigoEmpresa,
+  iCodigoAreaAtuacao: Integer);
+begin
+  Self.MesAno.Fechado := (Self.MesAno.MesSelecionado > 0) and MesFechadoParaLancamento(iCodigoEmpresa, Self.MesAno, iCodigoAreaAtuacao);
+end;
+
+function TSistemaControle.StartNewTransaction(
+  const Isolation: integer): TDBXTransaction;
+begin
+  Result := Self.SQLConnection.BeginTransaction(Isolation);
+end;
+
+procedure TSistemaControle.StartTransaction(const Isolation: integer);
+begin
+  Self.FCurrentTransaction := Self.StartNewTransaction(Isolation);
+end;
+
+initialization
+
+end.

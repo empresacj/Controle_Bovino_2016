@@ -1,0 +1,15 @@
+program Bovino;
+
+uses
+  Forms,
+  UfrmSplash in '..\Src\Forms\UfrmSplash.pas' {frmSplash},
+  UfrmPrincipalBovino in '..\Src\Forms\UfrmPrincipalBovino.pas' {frmPrincipalBovino};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TfrmSplash, frmSplash);
+  Application.Run;
+end.

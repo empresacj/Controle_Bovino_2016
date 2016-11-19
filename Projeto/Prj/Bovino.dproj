@@ -1,0 +1,248 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{022DCBCF-52FF-4E8F-898C-7FFC0B5A5872}</ProjectGuid>
+			<ProjectVersion>12.3</ProjectVersion>
+			<MainSource>Bovino.dpr</MainSource>
+			<Base>True</Base>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+			<Platform>Win32</Platform>
+			<AppType>Application</AppType>
+			<FrameworkType>VCL</FrameworkType>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_ImageBase>00400000</DCC_ImageBase>
+			<DCC_DcuOutput>.\$(Config)\$(Platform)</DCC_DcuOutput>
+			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
+			<DCC_ExeOutput>.\$(Config)\$(Platform)</DCC_ExeOutput>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+			<DCC_Optimize>false</DCC_Optimize>
+			<DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="Bovino.dpr">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<DCCReference Include="..\Src\Forms\UfrmSplash.pas">
+				<Form>frmSplash</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\UfrmPrincipalBovino.pas">
+				<Form>frmPrincipalBovino</Form>
+			</DCCReference>
+			<DCCReference Include="..\Library\Class Cad\Cadastro.pas">
+				<Form>frmCadastro</Form>
+			</DCCReference>
+			<DCCReference Include="..\Library\Class Cad\Movimentacao.pas">
+				<Form>frmMovimentacao</Form>
+			</DCCReference>
+			<DCCReference Include="..\Library\Comuns\UDicionario.pas"/>
+			<DCCReference Include="..\Library\Comuns\UIntObserver.pas"/>
+			<DCCReference Include="..\Library\Comuns\UMesAno.pas"/>
+			<DCCReference Include="..\Library\Comuns\UPersistentObject.pas"/>
+			<DCCReference Include="..\Library\Comuns\UPersistentObjectDBX.pas"/>
+			<DCCReference Include="..\Library\Comuns\USistemaException.pas"/>
+			<DCCReference Include="..\Library\Controladores\UControle.pas"/>
+			<DCCReference Include="..\Library\Controladores\USistemaControle.pas"/>
+			<DCCReference Include="..\Library\Functions\UCdsFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UDateTimeFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UDBFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UDialogFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UMsgFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UNumberFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UObjectFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\URegFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\USistemaFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UStringFunctions.pas"/>
+			<DCCReference Include="..\Library\Functions\UdbExpressFunctions.pas"/>
+			<DCCReference Include="..\Library\Dm\UdmConnection.pas">
+				<Form>dmConnection</Form>
+				<DesignClass>TDataModule</DesignClass>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroPropriedade.pas">
+				<Form>frmCadastroPropriedade</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoPropriedade.pas">
+				<Form>frmMovimentacaoPropriedade</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoUsuario.pas">
+				<Form>frmMovimentacaoUsuario</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoProprietario.pas">
+				<Form>frmMovimentacaoProprietario</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoResponsavel.pas">
+				<Form>frmMovimentacaoResponsavel</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoCriador.pas">
+				<Form>frmMovimentacaoCriador</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoFornecedor.pas">
+				<Form>frmMovimentacaoFornecedor</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoComprador.pas">
+				<Form>frmMovimentacaoComprador</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroUsuario.pas">
+				<Form>frmCadastroUsuario</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroProprietario.pas">
+				<Form>frmCadastroProprietario</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroResponsavel.pas">
+				<Form>frmCadastroResponsavel</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroCriador.pas">
+				<Form>frmCadastroCriador</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroComprador.pas">
+				<Form>frmCadastroComprador</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroFornecedor.pas">
+				<Form>frmCadastroFornecedor</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoPasto.pas">
+				<Form>frmMovimentacaoPasto</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroPasto.pas">
+				<Form>frmCadastroPasto</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoRacasAnimais.pas">
+				<Form>frmMovimentacaoRacasAnimais</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroRacaAnimal.pas">
+				<Form>frmCadastroRacaAnimal</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoVacina.pas">
+				<Form>frmMovimentacaoVacina</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroVacina.pas">
+				<Form>frmCadastroVacina</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoAnimaisCadastrados.pas">
+				<Form>frmMovimentacaoAnimaisCadastrados</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroAnimal.pas">
+				<Form>frmCadastroAnimal</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoPeste.pas">
+				<Form>frmMovimentacaoPeste</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroPeste.pas">
+				<Form>frmCadastroPeste</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoTanqueLeite.pas">
+				<Form>frmMovimentacaoTanqueLeite</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroTanqueLeite.pas">
+				<Form>frmCadastroTanqueLeite</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoFreezer.pas">
+				<Form>frmMovimentacaoFreezer</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroFreezer.pas">
+				<Form>frmCadastroFreezer</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoBalanca.pas">
+				<Form>frmMovimentacaoBalanca</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroBalanca.pas">
+				<Form>frmCadastroBalanca</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoMarcas.pas">
+				<Form>frmMovimentacaoMarcas</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroMarcas.pas">
+				<Form>frmCadastroMarcas</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Cadastros\UfrmCadastroCidade.pas">
+				<Form>frmCadastroCidade</Form>
+			</DCCReference>
+			<DCCReference Include="..\Src\Forms\Movimentacao\UfrmMovimentacaoCidade.pas">
+				<Form>frmMovimentacaoCidade</Form>
+			</DCCReference>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Delphi.Personality>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">1</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1046</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"/>
+						<VersionInfoKeys Name="FileDescription"/>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"/>
+						<VersionInfoKeys Name="LegalCopyright"/>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename"/>
+						<VersionInfoKeys Name="ProductName"/>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
+					</VersionInfoKeys>
+					<Excluded_Packages>
+						<Excluded_Packages Name="C:\Users\Public\Documents\RAD Studio\8.0\Bpl\DCPdelphi6.bpl">DCPcrypt cryptographic component library v2 BETA 3</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k150.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dclofficexp150.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+						<Excluded_Packages Name="C:\Users\Public\Documents\RAD Studio\8.0\Bpl\TronRB_D15.bpl">Tron - Componente para ReportBuilder</Excluded_Packages>
+						<Excluded_Packages Name="C:\Projetos\Bibliotecas\Componentes\DevExpress 12\Library\RS15\dcldxPSTeeChartRS15.bpl">ExpressPrinting System ReportLink for TeeChart by Developer Express Inc.</Excluded_Packages>
+						<Excluded_Packages Name="C:\Projetos\Bibliotecas\Componentes\DevExpress 12\Library\RS15\dcldxPSDBTeeChartRS15.bpl">ExpressPrinting System ReportLink for DBTeeChart by Developer Express Inc.</Excluded_Packages>
+					</Excluded_Packages>
+					<Source>
+						<Source Name="MainSource">Bovino.dpr</Source>
+					</Source>
+				</Delphi.Personality>
+				<Platforms>
+					<Platform value="Win32">True</Platform>
+				</Platforms>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+	</Project>

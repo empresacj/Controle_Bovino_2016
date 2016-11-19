@@ -1,0 +1,1962 @@
+unit Lan;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Buttons, ExtCtrls, StdCtrls, Mask, SqlExpr, DB, ppReport, ppDB,
+  ppDBPipe, Menus, ImgList, Provider, DBClient, SimpleDS, ppSubRpt,
+  FileCtrl, TabListN, DBCtrls, TypInfo, JvEditor,
+  UfraExportGridData, cxControls, cxContainer, cxEdit, cxGraphics, cxTL,
+  UNumberFunctions, cxPC, cxTextEdit, cxMaskEdit, cxDropDownEdit, cxButtonEdit,
+  cxGridLevel, cxGridDBTableView, cxGrid, cxLookAndFeels, cxLookAndFeelPainters,
+  dxSkinsCore, dxSkinsDefaultPainters, dxSkinscxPCPainter, cxPCdxBarPopupMenu,
+  cxStyles, cxCustomData, cxFilter, cxData, cxDataStorage, cxNavigator,
+  cxDBData, cxGridCustomView, cxGridCustomTableView, cxGridTableView, cxClasses,
+  cxDBEdit, cxGroupBox, cxCalendar, cxCalc, cxTimeEdit, cxSpinEdit, cxDB,
+  CurrencyEditN, DBCurrencyEditN,cxMemo, cxLookupEdit, cxDBExtLookupComboBox,
+  cxDBLookupEdit, cxDBLookupComboBox, MaskEditN, DBMaskEditN;
+
+type
+  TfrmLan = class(TForm)
+    ds: TDataSource;
+    imlCadastro: TImageList;
+    ppmCad: TPopupMenu;
+    ppmFormulario: TMenuItem;
+    ppmNovo: TMenuItem;
+    ppmEditar: TMenuItem;
+    ppmExcluir: TMenuItem;
+    ppmStatus: TMenuItem;
+    ppmPesquisa: TMenuItem;
+    ppmRelatorio: TMenuItem;
+    tlt: TTableListN;
+    pnlObj: TPanel;
+    pgcPrincipal: TcxPageControl;
+    tbsFormulario: TcxTabSheet;
+    tbsPesquisa: TcxTabSheet;
+    pgcPesquisa: TcxPageControl;
+    tbsFiltro: TcxTabSheet;
+    scbPesquisa: TScrollBox;
+    Label1: TLabel;
+    Label2: TLabel;
+    pkeCampos: TcxComboBox;
+    pkeCondicao: TcxComboBox;
+    edtPesquisa: TcxButtonEdit;
+    tbsResultado: TcxTabSheet;
+    dbgGrid: TcxGrid;
+    dbgGridLevel: TcxGridLevel;
+    dbgGridDBTableView: TcxGridDBTableView;
+    Panel1: TPanel;
+    pnlPesquisa: TPanel;
+    imgPesquisa: TImage;
+    btnAddPesq: TSpeedButton;
+    btnPesquisar: TSpeedButton;
+    btnRemPesq: TSpeedButton;
+    btnDesfPesq: TSpeedButton;
+    btnAjudaPesq: TSpeedButton;
+    btnFecharPesq: TSpeedButton;
+    btnLimpar: TSpeedButton;
+    btnExcluirCon: TSpeedButton;
+    pnlBotoes: TPanel;
+    btnExcluir: TSpeedButton;
+    btnIncluir: TSpeedButton;
+    btnGravar: TSpeedButton;
+    btnEditar: TSpeedButton;
+    btnCancelar: TSpeedButton;
+    btnFechar: TSpeedButton;
+    btnFirst: TSpeedButton;
+    btnPrevious: TSpeedButton;
+    btnNext: TSpeedButton;
+    btnLast: TSpeedButton;
+    btnImprimir: TSpeedButton;
+    cds: TClientDataSet;
+    fraExportData: TfraExportData;
+    (*----------------- PROCEDURES DO FORM ---------------------*)
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormShow(Sender: TObject);
+    (*----------------- PROCEDURES DA PAGECONTROL ---------------------*)
+    procedure pgcPrincipalChange(Sender: TObject);
+    procedure pgcPrincipalPageChanging(Sender: TObject; NewPage: TcxTabSheet;
+      var AllowChange: Boolean);
+    (*----------------- PROCEDURES DA BARRA DE NAVEGAÇÃO ---------------------*)
+    procedure btnIncluirClick(Sender: TObject);
+    procedure btnEditarClick(Sender: TObject);
+    procedure btnGravarClick(Sender: TObject);
+    procedure btnCancelarClick(Sender: TObject);
+    procedure btnExcluirClick(Sender: TObject);
+    procedure btnAjudaClick(Sender: TObject);
+    procedure btnFecharClick(Sender: TObject);
+    (*----------------- PROCEDURES DO DXINSPECTOR ---------------------*)
+    procedure btnAddPesqClick(Sender: TObject);
+    procedure btnRemPesqClick(Sender: TObject);
+    procedure edtPesquisaPropertiesButtonClick(Sender: TObject;
+      AbsoluteIndex: Integer);
+    procedure btnImprimirClick(Sender: TObject);
+    procedure ppmCadPopup(Sender: TObject);
+    procedure ppmPesquisaClick(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure btnPesquisarClick(Sender: TObject);
+    procedure btnDesfPesqClick(Sender: TObject);
+    procedure btnLimparClick(Sender: TObject);
+    procedure dbgGridDBTableViewCustomDrawCell(
+	  Sender: TcxCustomGridTableView; ACanvas: TcxCanvas;
+	  AViewInfo: TcxGridTableDataCellViewInfo; var ADone: Boolean);
+
+    procedure FormActivate(Sender: TObject);
+    procedure btnFecharPesqClick(Sender: TObject);
+    procedure pgcPesquisaChange(Sender: TObject);
+    procedure dbgGridDBTableViewDblClick(Sender: TObject);
+    procedure dsStateChange(Sender: TObject);
+    procedure btnFirstClick(Sender: TObject);
+    procedure btnPreviousClick(Sender: TObject);
+    procedure btnNextClick(Sender: TObject);
+    procedure btnLastClick(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure FormCreate(Sender: TObject);
+    procedure pkeCamposPropertiesValidate(Sender: TObject; var DisplayValue: Variant; var ErrorText: TCaption; var Error: Boolean);
+    procedure edtPesquisaPropertiesValidate(Sender: TObject; var DisplayValue: Variant; var ErrorText: TCaption; var Error: Boolean);
+    procedure FormKeyPress(Sender: TObject; var Key: Char);
+    procedure dbgGridDBTableViewColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+
+    procedure dbgGridDBTableViewSdtColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+
+    procedure dbgGridDBTableViewCdsColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+    procedure pkeCamposExit(Sender: TObject);
+
+  private
+   { Private declarations }
+   stlComponent   : TStringList;
+   iQtdCmp        : Integer;
+   FDataSet       : TDataSet; // Identifica se deve ser verificada a existencia de contas cadastradas para a empresa.
+   FReport        : TppReport;
+   FPipeLine      : TppDBPipeline;
+   FReportName    : String;
+   FReportChild   : String;
+   FObjFocus      : TObject;
+   FConfigGrid    : Boolean;
+   FStlCampos,
+   FStlPsqCmp,
+   FStlPsqVle     : TStringList;
+   FpkeConLog,
+   FpkeCampos,
+   FpkeCondicao   : TcxComboBox;
+   FedtPesquisa   : TcxButtonEdit;
+   FlblSe         : TLabel;
+   FStatus        : String;
+   FTemDataset    : Boolean; // Identifica se deve ser verificada a existencia de contas cadastradas para a empresa.
+   FTemEmpresa    : Boolean; // Identifica se para a entrada de dados necessita selecionar a Empresa
+   FCodEmp        : Integer; // Armazena o Codigo da empresa
+   FEmpFieldName  : String; // Informa o nome do campo da Empresa
+   FTemMes        : Boolean; // Identifica se para a entrada de dados necessita selecionar o mes e o ano
+   FMesRef        : Integer; // Armazena o Mes Selecionado para trabalho
+   FTemAno        : Boolean;
+   FAnoRef        : TDate; // Armazena o Ano Selecionado para trabalho
+   FTemMesAno     : Boolean; // Identifica se para a entrada de dados necessita selecionar o mes e o ano
+   FTemStatus     : Boolean;
+   FTableName     : String;
+   FConsulta      : String;
+   FExec          : Boolean;
+   FPodeConfirmar : Boolean;
+   FStayBrowse    : Boolean;
+   FBannerName    : String;
+   FNomEmp        : String;
+   FHist          : array of TStringList;
+   FWhere         : String;
+   FModName       : String;
+   FWinCtrl       : TWinControl;
+   FAutoConfigureButtonExtra: Boolean;
+   FParamsFromClientDataSet: Boolean;
+   procedure SetStatus(StsName : String);
+   procedure EnablePageControl;
+   procedure HabilitaButtonBar( Sender : TObject);
+   procedure SetReportComponet( Report : TppReport);
+   procedure SetReportName(ReportName : String);
+   procedure SetReportChild(ReportChild: String);
+   procedure SetPipeLine(PipeLine : TppDBPipeline);
+   procedure SetObjFocus(Sender : TObject);
+   procedure SetTableName(TableName: String);
+   procedure SetTemEmpresa(TemEmpresa: Boolean);
+   procedure SetCodEmp(CodEmp : Integer);
+   procedure SetEmpFieldName(EmpFieldName : String);
+   procedure SetMesRef(MesRef : Integer);
+   procedure SetAnoRef(AnoRef : TDate);
+   procedure SetDataSet(DataSet: TDataSet);
+   procedure CMExit(var Message: TCMFocusChanged); message CM_FOCUSCHANGED;
+   procedure VerificarComponentes(Owner: TComponent);
+  public
+   { Public declarations }
+   procedure CfgObr; virtual;// Procedure para deixar os campos obrigatório vermelhos
+   procedure ordenarSimpleDataset(SimpleDataset: TSimpleDataset;
+                                  CamposOrdenacao: String);
+
+   function  GetHistory(Strings: TStringList): String;
+   procedure CheckHistory(FieldName, FieldValue: String);
+   procedure HabBotoes(const Value: boolean; const IsEnabled: boolean = True); virtual;
+   procedure HabilitaFoco(Sender: TObject);
+   procedure FedtPesquisaKeyPress(Sender: TObject; var Key: Char);
+   procedure RetornarConsultaPadrao();
+   property AutoConfigureButtonExtra: Boolean read FAutoConfigureButtonExtra write FAutoConfigureButtonExtra;
+   property  Status          : String          read FStatus           write SetStatus;
+   property  ConfigGrid      : Boolean         read FConfigGrid       write FConfigGrid;
+   property  ReportComponent : TppReport       read FReport           write SetReportComponet;
+   property  ReportPipeLine  : TppDBPipeline   read FPipeLine         write SetPipeLine;
+   property  ReportName      : String          read FReportName       write SetReportName;
+   property  ReportChild     : String          read FReportChild      write SetReportChild;
+   property  ObjFocus        : TObject         read FObjFocus         write SetObjFocus;
+   property  TableName       : String          read FTableName        write SetTableName;
+   property  TemEmpresa      : Boolean         read FTemEmpresa       write SetTemEmpresa;
+   property  CodEmp          : Integer         read FCodEmp           write SetCodEmp;
+   property  EmpFieldName    : String          read FEmpFieldName     write SetEmpFieldName;
+   property  TemMesAno       : Boolean         read FTemMesAno;
+   property  MesRef          : Integer         read FMesRef           write SetMesRef;
+   property  AnoRef          : TDate           read FAnoRef           write SetAnoRef;
+   property  Exec            : Boolean         read FExec             write FExec;
+   property  StayBrowse      : Boolean         read FStayBrowse       write FStayBrowse;
+   property  BannerName      : String          read FBannerName       write FBannerName;
+   property  DataSet         : TDataSet        read FDataSet          write SetDataSet;
+   property  NomEmp          : String          read FNomEmp           write FNomEmp;
+   property  Where           : String          read FWhere            write FWhere;
+   property  ParamsFromClientDataSet: Boolean read FParamsFromClientDataSet write FParamsFromClientDataSet;
+  published
+   procedure ChangeCfgImp; virtual;
+
+  protected
+   Transacao : TTransactionDesc;
+   bInsert   : boolean;
+   function CanProcess: Boolean;
+   function  GetHelpTopic: string; virtual;
+  end;
+var
+  frmLan: TfrmLan;
+
+implementation
+
+uses USistemaControle, UcxGridFunctions, UcdsFunctions, Clipbrd, URegFunctions, UStringFunctions,
+     UMsgFunctions;
+
+{$R *.dfm}
+
+function TfrmLan.GetHelpTopic: string;
+begin
+  Result := StringReplace(Self.Caption, 'Lançamento de ', '', []);
+  Result := StringReplace(Result, 'Lançamento do ', '', []);
+end;
+
+procedure TfrmLan.SetDataSet(DataSet: TDataSet);
+begin
+  FTemDataset := Dataset <> Nil;
+  FDataSet    := DataSet;
+end;
+
+procedure TfrmLan.SetStatus( StsName : String);
+begin
+  FStatus    := StsName;
+  FTemStatus := True;
+end;
+
+procedure TfrmLan.EnablePageControl;
+begin
+  pgcPrincipal.ActivePage := tbsFormulario;
+  pgcPesquisa.ActivePage  := tbsPesquisa;
+end;
+
+procedure TfrmLan.HabilitaButtonBar(Sender: TObject);
+begin
+  if Sender = tbsPesquisa then
+   begin
+    pnlPesquisa.Visible := True;
+    pnlBotoes.Visible   := Not pnlPesquisa.Visible;
+   end
+  else
+   begin
+    pnlBotoes.Visible   := True;
+    pnlPesquisa.Visible := Not pnlBotoes.Visible;
+   end;
+end;
+
+procedure TfrmLan.SetReportComponet(Report: TppReport);
+begin
+ FReport := Report;
+end;
+
+procedure TfrmLan.SetReportName( ReportName : String);
+begin
+ FReportName := ReportName;
+end;
+
+procedure TfrmLan.SetReportChild(ReportChild: String);
+begin
+ FReportChild := ReportChild;
+end;
+
+procedure TfrmLan.SetPipeLine( PipeLine : TppDBPipeline);
+begin
+ FPipeLine := PipeLine;
+end;
+
+procedure TfrmLan.HabBotoes(const Value: boolean; const IsEnabled: boolean = True);
+begin
+ // incluir e editar -> false
+ // gravar e cancelar -> true
+ btnIncluir.Enabled    := Value and IsEnabled and btnIncluir.Visible;
+ btnEditar.Enabled     := btnEditar.Visible and btnIncluir.Enabled and IsEnabled;
+ btnExcluir.Enabled    := btnExcluir.Visible and btnIncluir.Enabled and (ds.DataSet.RecordCount > 0) and IsEnabled;
+ btnExcluirCon.Enabled := btnExcluir.Enabled;
+ btnImprimir.Enabled   := btnImprimir.Visible and btnIncluir.Enabled;
+ btnFechar.Enabled     := Value and IsEnabled and btnFechar.Visible;
+ btnGravar.Enabled     := not Value and IsEnabled and btnGravar.Visible;
+ btnCancelar.Enabled   := btnCancelar.Visible and btnGravar.Enabled and IsEnabled;
+
+ // Verificando açoes
+ btnFirst.Enabled      := IsEnabled;
+ btnPrevious.Enabled   := IsEnabled;
+ btnNext.Enabled       := IsEnabled;
+ btnLast.Enabled       := IsEnabled;
+end;
+
+procedure TfrmLan.SetObjFocus(Sender: TObject);
+begin
+ FObjFocus := Sender;
+end;
+
+procedure TfrmLan.SetTableName(TableName: String);
+begin
+  FTableName := TableName;
+end;
+
+procedure TfrmLan.SetTemEmpresa(TemEmpresa: Boolean);
+begin
+  FTemEmpresa := TemEmpresa;
+  FCodEmp     := CodEmp;
+end;
+
+procedure TfrmLan.VerificarComponentes(Owner: TComponent);
+var
+  i: Integer;
+begin
+  for i := 0 to Owner.ComponentCount - 1 do
+   begin
+    // Resetando a cor dos group boxes
+    if Owner.Components[i] is TcxGroupBox then
+     TcxGroupBox(Owner.Components[i]).Style.RestoreDefaults;
+
+
+    // Checando se existe grid para retirar a seleção do grid.
+    if (Owner.Components[i] is TcxGridDBTableView) and Self.ConfigGrid then
+     begin
+      TcxGridDBTableView(Owner.Components[i]).OptionsSelection.HideSelection := True;
+      TcxGridDBTableView(Owner.Components[i]).OptionsSelection.HideFocusRectOnExit := TcxGridDBTableView(Owner.Components[i]).OptionsSelection.HideSelection;
+     end;
+
+    // Contando os componentes
+    if (((Owner.Components[i] is TWinControl)       and
+         (TWinControl(Owner.Components[i]).TabStop) and
+         (TWinControl(Owner.Components[i]).Enabled) and not
+         (Owner.Components[i] is TButtonControl))   or
+         (Owner.Components[i] is TFrame)            or
+         (Owner.Components[i] is TcxDBButtonEdit)   or
+         (Owner.Components[i] is TRadioGroup))      then
+     Inc(iQtdCmp);
+
+    if (Owner.Components[i] is TWinControl) then
+     if not TWinControl(Owner.Components[i]).Enabled then Continue;
+
+{1} if (Owner.Components[i].Tag > 0) and (Owner.Components[i].Tag < 20) then
+     begin
+      if (Owner.Components[i] is TFrame) then
+       Self.VerificarComponentes(Owner.Components[i]);
+
+{2}   if (TWinControl(Owner.Components[i]).Parent is TcxGroupBox) then
+       begin
+        if not(Owner.Components[i] is TcxCustomButtonEdit) and IsPublishedProp(TcxCustomEditProperties(TcxTextEdit(owner.Components[i]).Properties), 'ReadOnly') then
+         if (GetOrdProp(TcxCustomEditProperties(TcxTextEdit(owner.Components[i]).Properties), 'ReadOnly') = 1) then
+          Continue;
+
+        // A cor dos GroupBoxes que armazenam campos obrigatórios e diferenciada
+        TcxGroupBox(TWinControl(Owner.Components[i]).Parent).Style.TextColor  := clMaroon;
+        TcxGroupBox(TWinControl(Owner.Components[i]).Parent).Style.Font.Color := clMaroon;
+
+        // Os indices dos componentes obrigatório são guardados nesta StringList. Para que mais tarde
+        // estes possam ser usados para setar o foco para o campo de preenchimento obrigatório.
+        stlComponent.Add(IntToStr(i));
+       end;{2}
+     end;{1}
+   end;
+end;
+
+procedure TfrmLan.SetCodEmp(CodEmp: Integer);
+begin
+  FCodEmp     := CodEmp;
+  FTemEmpresa := True;
+end;
+
+procedure TfrmLan.SetEmpFieldName(EmpFieldName: String);
+begin
+  FEmpFieldName := EmpFieldName;
+  FTemEmpresa   := True;
+end;
+
+procedure TfrmLan.SetMesRef(MesRef : Integer);
+begin
+  FMesRef := MesRef;
+  FTemMes := True;
+end;
+
+procedure TfrmLan.SetAnoRef(AnoRef : TDate);
+begin
+  FAnoRef := AnoRef;
+  FTemAno := True;
+end;
+
+function TfrmLan.GetHistory(Strings: TStringList): String;
+var
+  Frm      : TForm;
+//  List     : TcxTreeList;
+//  Col      : TcxTreeListColumn;
+//  Node     : TcxTreeListNode;
+  Pnl      : TPanel;
+  Btn      : TBitBtn;
+  i        : Integer;
+//  ListBand : TcxTreeListBand;
+begin
+  Result := '';
+
+  // Criando Form;
+  Frm             := TForm.Create(Self);
+  Frm.BorderStyle := bsToolWindow;
+  Frm.Caption     := 'Selecionar Valor';
+  Frm.Position    := poScreenCenter;
+  Frm.Font.Name   := 'Arial';
+  Frm.Height      := 370;
+  Frm.ShowHint    := True;
+  Frm.Width       := 325;
+
+//  // Criando TreeList
+//  List                       := TcxTreeList.Create(Frm);
+//  List.Align                 := alClient;
+//  List.LookAndFeel.Kind      := lfFlat;
+//  List.Parent                := Frm;
+//  List.OptionsView.GridLines := tlglBoth;
+//
+//  // Criando colunas
+//  ListBand                      := List.Bands.Add;
+//  Col                           := List.CreateColumn(ListBand);
+//  Col.Width                     := 50;
+//  Col.Caption.Text              := 'Ordem';
+//  Col.Properties.Alignment.Horz := taRightJustify;
+//
+//  Col                 := List.CreateColumn(ListBand);
+//  Col.Width           := 200;
+//  Col.Caption.Text    := 'Histórico';
+//
+//  // Adicionando valores
+//  for i := 0 to Strings.Count - 1 do
+//   begin
+//    Node := List.Add;
+//    Node.Texts[0] := IntToStr(i + 1);
+//    Node.Texts[1] := Strings[i];
+//   end;
+
+  // Criando Panel
+  Pnl            := TPanel.Create(Frm);
+  Pnl.Align      := alBottom;
+  Pnl.BevelOuter := bvLowered;
+  Pnl.Height     := 40;
+  Pnl.Parent     := Frm;
+
+  // Criando botão OK
+  Btn        := TBitBtn.Create(Frm);
+  Btn.Kind   := bkOK;
+  Btn.Left   := (Frm.Width div 2) - Btn.Width;
+  Btn.Parent := Pnl;
+  Btn.Top    := (Pnl.Height div 2) - (Btn.Height div 2);
+
+  // Criando botão Cancelar
+  Btn         := nil;
+  Btn         := TBitBtn.Create(Frm);
+  Btn.Kind    := bkCancel;
+  Btn.Caption := 'Cancelar';
+  Btn.Left    := Frm.Width div 2;
+  Btn.Parent  := Pnl;
+  Btn.Top     := (Pnl.Height div 2) - (Btn.Height div 2);
+
+//  if Frm.ShowModal = mrOK then
+//   Result := List.FocusedNode.Texts[1];
+
+  Frm.Release;
+
+  Pnl  := nil;
+//  Col  := nil;
+//  List := nil;
+  Frm  := nil;
+end;
+
+// Rotina pra armazenar histórico
+procedure TfrmLan.ChangeCfgImp;
+begin
+
+end;
+
+procedure TfrmLan.CheckHistory(FieldName, FieldValue: String);
+begin
+  // Condições que impedem o valor de ser arquivado
+  if (ds.DataSet.FieldByName(FieldName).FieldKind <> fkData) or (ds.DataSet.FieldByName(FieldName).IsNull) or (ds.DataSet.FieldByName(FieldName).FieldName = FStatus) then
+   Exit;
+
+  // Verificando se a StringList já existe
+  if FHist[ds.DataSet.FieldByName(FieldName).Index] = nil then
+   begin
+    FHist[ds.DataSet.FieldByName(FieldName).Index] := TStringList.Create;
+
+    // Verificando se existe o arquivo de histórico
+//    if FileExists(ApPath + '\Histórico\' + ds.DataSet.FieldByName(FieldName).Name + '.hst') then
+//     FHist[ds.DataSet.FieldByName(FieldName).Index].LoadFromFile(ApPath + '\Histórico\' + ds.DataSet.FieldByName(FieldName).Name + '.hst');
+   end;
+
+  // Impondo limite máximo de 30 ítens no histórico
+  while FHist[ds.DataSet.FieldByName(FieldName).Index].Count >= 30 do
+   FHist[ds.DataSet.FieldByName(FieldName).Index].Delete(FHist[ds.DataSet.FieldByName(FieldName).Index].Count - 1);
+
+  // Adicionando último valor no topo da lista
+  FHist[ds.DataSet.FieldByName(FieldName).Index].Insert(0, FieldValue);
+end;
+
+(*------------------ PROCEDURES DO FORM -----------------------------*)
+procedure TfrmLan.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  i: Integer;
+begin
+  // Verificando se o diretório de históricos existe
+//  if not DirectoryExists(ApPath + '\Histórico') then
+//   if not CreateDir(ApPath + '\Histórico') then
+    Exit;
+
+  // Armazanando histório em arquivo
+  for i := Low(FHist) to High(FHist) do
+   begin
+    // Verificando o ítem deve ser salvo
+    if FHist[i] <> nil then
+//     if FHist[i].Count > 0 then
+//      FHist[i].SaveToFile(ApPath + '\Histórico\' + ds.DataSet.Fields[i].Name + '.hst');
+   end;
+
+  // Verificando se o ClientDataSetLocal está ativo;
+  if cds.Active then
+   cds.Close;
+
+  cds.Fields.Clear;
+
+  // Verificando tag do dataset para saber se ele pode ser fechado
+  if (ds.DataSet.Tag < 3) then
+   ds.DataSet.Close;
+
+  if ds.DataSet.Tag = 5 then ds.DataSet.Tag := 0;
+
+  Application.OnHint := nil;
+  Release;
+  frmLan := nil;
+end;
+
+procedure TfrmLan.FormShow(Sender: TObject);
+var
+  i: Integer;
+//  Item : TItem;
+begin
+  // Verificando controle de acesso
+//  Self.btnIncluir.Enabled    := Self.tac.CanInsert(FModName) and not Self.tac.TronServerInactive;
+//  Self.btnEditar.Enabled     := Self.tac.CanEdit(FModName) and not Self.tac.TronServerInactive;
+//  Self.btnExcluir.Enabled    := Self.tac.CanDelete(FModName) and not Self.tac.TronServerInactive;
+//  Self.btnExcluirCon.Enabled := Self.tac.CanDelete(FModName) and not Self.tac.TronServerInactive;
+//
+//  // Logando o acesso
+//  Self.tac.LogAccess(FModName);
+//  Self.tac.ConfigMenu;
+
+  // Configurando componentes obrigatórios
+  Self.CfgObr;
+
+//  if (tlt.IndexOf(ds.DataSet) = -1) and (ds.DataSet.State <> dsInsert) then
+//   begin
+//    Item       := tlt.Items.Add;
+//    Item.Table := ds.DataSet;
+//   end;
+//
+//  tlt.Reopen;
+
+  EnablePageControl;
+  FExec      := True;
+
+  // Criando StringList's que serão utilizadas nas pesquisas
+  FStlPsqCmp := TStringList.Create;
+  FStlPsqVle := TStringList.Create;
+  HabBotoes(True);
+
+  fraExportData.ConfigGrid(Self);
+end;
+
+(*----------------- PROCEDURES DA PAGECONTROL ---------------------*)
+procedure TfrmLan.pgcPrincipalChange(Sender: TObject);
+begin
+  HabBotoes(True);
+
+  btnIncluir.Enabled  := (pgcPrincipal.ActivePage = tbsFormulario);
+  btnEditar.Enabled   := (pgcPrincipal.ActivePage = tbsFormulario);
+  btnExcluir.Enabled  := (pgcPrincipal.ActivePage = tbsFormulario);
+  btnFirst.Enabled    := (pgcPrincipal.ActivePage = tbsFormulario);
+  btnPrevious.Enabled := btnFirst.Enabled;
+  btnNext.Enabled     := btnFirst.Enabled;
+  btnLast.Enabled     := btnFirst.Enabled;
+
+  if pgcPrincipal.ActivePageIndex = 1 then pgcPesquisa.OnChange(Self);
+end;
+
+procedure TfrmLan.pgcPrincipalPageChanging(Sender: TObject;
+  NewPage: TcxTabSheet; var AllowChange: Boolean);
+begin
+  // Bloqueando mudança de página quando em inserção ou browse absoluto
+  AllowChange := (Not btnGravar.Enabled) and (ds.DataSet.Tag <> 5);
+
+  if AllowChange then HabilitaButtonBar(NewPage);
+end;
+
+(*----------------- PROCEDURES DA BARRA DE NAVEGAÇÃO ---------------------*)
+procedure TfrmLan.btnIncluirClick(Sender: TObject);
+begin
+  bInsert := True;
+  if ds.DataSet.Tag <> 3 then ds.DataSet.Tag := 2;
+  pgcPrincipal.ActivePageIndex := 0;
+  HabBotoes(False);
+  HabilitaFoco(FObjFocus);
+  if ds.DataSet.State <> dsInsert then ds.DataSet.Append;
+end;
+
+procedure TfrmLan.btnEditarClick(Sender: TObject);
+begin
+  bInsert := False;
+  if FTemStatus and (ds.DataSet.FieldByName(FStatus).AsString = 'I') then
+   begin
+    FExec := False;
+    TMsgFunctions.Error('Não é possível alterar um registro inativo...');
+    Exit;
+   end;
+
+  ds.DataSet.Tag               := 1;
+  pgcPrincipal.ActivePageIndex := 0;
+  HabBotoes(False);
+  HabilitaFoco(FObjFocus);
+  ds.DataSet.Edit;
+end;
+
+procedure TfrmLan.btnGravarClick(Sender: TObject);
+var
+  sMsg: string;
+  i, n: integer;
+begin
+  FExec := False;
+
+  HabilitaFoco(FObjFocus);
+//
+//  sMsg := EmptyFields(ds.DataSet);
+//
+//  if Cheio(sMsg) then
+//   begin
+//    Erro('O(s) seguinte(s) campo(s) precisa(m) ser preenchido(s): ' + ALine + sMsg);
+//    sMsg := Copy(sMsg, Pos('*', sMsg) + 1, Pos(';', sMsg) - 1);
+//    sMsg := OnlyLetters(sMsg);
+//    HabilitaFoco(FObjFocus);
+//    Abort;
+//   end;
+
+  if FTemStatus and (ds.DataSet.State = dsInsert) then
+   ds.DataSet.FieldByName(FStatus).AsString := ds.DataSet.FieldByName(FStatus).DefaultExpression;
+
+  if (FCodEmp > 0) and (ds.DataSet.State = dsInsert) then
+   ds.DataSet.FieldByName('CODEMP').AsInteger := FCodEmp;
+
+  if ds.DataSet.State in [dsInsert,dsEdit] then ds.DataSet.Post;
+
+  if ds.DataSet.Tag = 3 then
+   begin
+    ds.DataSet.Tag := 4;
+    Close;
+    Exit;
+   end
+  else if (ds.DataSet.Tag = 2) or (ds.DataSet.Tag = 1) then
+   begin
+    ds.DataSet.Tag := 0;
+
+    // Verificando se a inserção automática está habilitada
+    HabBotoes(True);
+   end
+  else
+   begin
+    ds.DataSet.Tag := 0;
+    btnCancelar.Click;
+   end;
+end;
+
+procedure TfrmLan.btnCancelarClick(Sender: TObject);
+var
+  i : Integer;
+begin
+  bInsert := False;
+  FExec   := False;
+
+  ActiveControl := nil;
+
+  // Verificação se ocorreu alteração em algum campo
+  for i := 0 to ds.DataSet.FieldCount - 1 do
+   if (ds.DataSet.Fields[i] is TDataSetField) or (ds.DataSet.Fields[i].FieldKind = fkLookup) then Continue
+   else if ((ds.DataSet.State = dsInsert) and not (ds.DataSet.Fields[i].IsNull)) or ((ds.DataSet.State = dsEdit) and (ds.DataSet.Fields[i].NewValue <> ds.DataSet.Fields[i].OldValue)) then
+    Break;
+
+  if (i <> ds.DataSet.FieldCount) and not TMsgFunctions.Question('Deseja cancelar as alterações?') then Abort;
+
+  ds.DataSet.Cancel;
+  if ds.DataSet.Tag <> 3 then ds.DataSet.Tag := 0 else Close;
+  HabBotoes(True);
+end;
+
+procedure TfrmLan.btnExcluirClick(Sender: TObject);
+begin
+ FExec := False;
+
+ if ds.DataSet.RecordCount = 0 then
+  begin
+   TMsgFunctions.Error('Não há registros para serem excluidos...');
+   Exit;
+  end;
+
+ if TMsgFunctions.Question('Confirma a exclusão do registro selecionado?') then
+  begin
+   ds.DataSet.Delete;
+   btnExcluir.Enabled := btnExcluir.Enabled and (ds.DataSet.RecordCount > 0);
+   btnExcluirCon.Enabled := btnExcluir.Enabled;
+  end;
+end;
+
+procedure TfrmLan.btnAjudaClick(Sender: TObject);
+var
+  sAplicacao: String;
+  iTamMaxDscApp: Integer;
+begin
+  if (TRegFunctions.ReadRegisterStr(HKEY_CURRENT_USER, 'Software\Tron\TronHelp', 'HelpOnline', 'S') = 'S') then
+   begin
+    iTamMaxDscApp := Pos(Application.Title, '-');
+
+    if iTamMaxDscApp < 1 then
+     iTamMaxDscApp := Length(Application.Title);
+
+    sAplicacao := Copy(Application.Title, 1, iTamMaxDscApp);
+
+//    if TRegFunctions.ReadRegisterStr(HKEY_CURRENT_USER, 'Software\Tron\TronHelp', 'BuildHelp', 'N') = 'S' then
+//     TOSFunctions.OpenSite(Format('http://site.tron.com.br/help/buildhelp.php?application=%s&title=%s&topic=%s',
+//                                  [sAplicacao, Self.Caption, Self.GetHelpTopic]))
+//    else
+//     TOSFunctions.OpenSite(Format('http://site.tron.com.br/help/openhelp.php?application=%s&title=%s&topic=%s',
+//                                  [sAplicacao, Self.Caption, Self.GetHelpTopic]));
+   end
+  else
+end;
+
+procedure TfrmLan.btnFecharClick(Sender: TObject);
+begin
+  Close;
+end;
+
+(*----------------- PROCEDURES DO DXINSPECTOR ---------------------*)
+procedure TfrmLan.btnAddPesqClick(Sender: TObject);
+begin
+ pgcPesquisa.ActivePageIndex := 0;
+
+ if Assigned(FpkeConLog) and (FpkeConLog.ItemIndex < 0) then
+  begin
+   TMsgFunctions.Error('É necessário informar a condição lógica da pesquisa atual antes de adicionar um novo critério...');
+   FpkeConLog.SetFocus;
+   Exit;
+  end;
+
+ if FpkeCampos.ItemIndex < 0 then
+  begin
+   TMsgFunctions.Error('É necessário informar o campo da pesquisa atual antes de adicionar um novo critério...');
+   FpkeCampos.SetFocus;
+   Exit;
+  end;
+
+ if FpkeCondicao.ItemIndex < 0 then
+  begin
+   TMsgFunctions.Error('É necessário informar a condição da pesquisa atual antes de adicionar um novo critério...');
+   FpkeCondicao.SetFocus;
+   Exit;
+  end;
+
+ // Desabilitando componentes de filtro atual para que este não seja alterado à revelia posteriormente
+ if Assigned(FedtPesquisa) and TStringFunctions.IsEmpty(FedtPesquisa.Text) then
+  begin
+   TMsgFunctions.Error('É necessário informar o valor a ser pesquisado da pesquisa atual antes de adicionar um novo critério...');
+   FedtPesquisa.SetFocus;
+   Exit;
+  end;
+
+ // Habilitando botão para remover filtro
+ if not btnRemPesq.Enabled then btnRemPesq.Enabled := True;
+
+ // Desabilitando componentes de filtro atual para que este não seja alterado à revelia posteriormente
+ if Assigned(FpkeConLog) then FpkeConLog.Enabled := False;
+
+ FpkeCampos.Enabled   := False;
+ FpkeCondicao.Enabled := False;
+ FedtPesquisa.Enabled := False;
+
+ // Removendo campos já pesquisado anteriormente
+ FStlCampos.Delete(FStlCampos.IndexOf(FpkeCampos.Text));
+
+ // Adicionando novo ítem nas stl's de pesquisa
+ FStlPsqCmp.Add(''); FStlPsqVle.Add('');
+
+ // Incrementando Tag do TabSheet, pois este valor vai ser a referência para o
+ // Top dos novos componentes
+ tbsPesquisa.Tag := tbsPesquisa.Tag + 26;
+
+ // Condição lógica
+ FpkeConLog                 := nil;
+ FpkeConLog                 := TcxComboBox.Create(Self);
+ FpkeConLog.Parent          := scbPesquisa;
+ FpkeConLog.Top             := tbsPesquisa.Tag - scbPesquisa.VertScrollBar.Position;
+ FpkeConLog.Left            := 10;
+ FpkeConLog.Width           := 65;
+ FpkeConLog.Tag             := 1;
+ FpkeConLog.Properties.Items.Add('E');
+ FpkeConLog.Properties.Items.Add('OU');
+
+ // Campos
+ FpkeCampos                 := nil;
+ FpkeCampos                 := TcxComboBox.Create(Self);
+ FpkeCampos.Parent          := scbPesquisa;
+ FpkeCampos.Top             := tbsPesquisa.Tag - scbPesquisa.VertScrollBar.Position;
+ FpkeCampos.Left            := 81;
+ FpkeCampos.Width           := 110;
+ FpkeCampos.Tag             := 2;
+ FpkeCampos.Properties.Sorted          := True;
+ FpkeCampos.Properties.Items.AddStrings(FStlCampos);
+ FpkeCampos.ItemIndex       := 0;
+ FpkeCampos.Properties.OnValidate      := pkeCamposPropertiesValidate;
+
+
+ // Label
+ FlblSe         := nil;
+ FlblSe         := TLabel.Create(Self);
+ FlblSe.Parent  := scbPesquisa;
+ FlblSe.Top     := tbsPesquisa.Tag + 4 - scbPesquisa.VertScrollBar.Position;
+ FlblSe.Left    := Label2.Left;
+ FlblSe.Tag     := 3;
+ FlblSe.Caption := 'Se';
+
+ // Condição Se
+ FpkeCondicao                 := nil;
+ FpkeCondicao                 := TcxComboBox.Create(Self);
+ FpkeCondicao.Parent          := scbPesquisa;
+ FpkeCondicao.Top             := tbsPesquisa.Tag - scbPesquisa.VertScrollBar.Position;
+ FpkeCondicao.Left            := 216;
+ FpkeCondicao.Width           := 130;
+ FpkeCondicao.Tag             := 4;
+ FpkeCondicao.Properties.Items.AddStrings(pkeCondicao.Properties.Items);
+
+ // Pesquisa
+ FedtPesquisa                 := TcxButtonEdit.Create(Self);
+ FedtPesquisa.Parent          := scbPesquisa;
+ FedtPesquisa.Top             := tbsPesquisa.Tag - scbPesquisa.VertScrollBar.Position;
+ FedtPesquisa.Left            := 352;
+ FedtPesquisa.Width           := 305;
+ FedtPesquisa.Tag             := 5;
+ FedtPesquisa.Properties.OnButtonClick   := edtPesquisaPropertiesButtonClick;
+ FedtPesquisa.Properties.OnValidate      := edtPesquisaPropertiesValidate;
+
+ // Setando o foco
+ FpkeConLog.SetFocus;
+end;
+
+procedure TfrmLan.btnRemPesqClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  pgcPesquisa.ActivePageIndex := 0;
+
+  // Destruindo componentes
+  FpkeConLog.Destroy;
+  FpkeCampos.Destroy;
+  FlblSe.Destroy;
+  FpkeCondicao.Destroy;
+  FedtPesquisa.Destroy;
+
+  // Retirando referência
+  FpkeConLog   := nil;
+  FpkeCampos   := nil;
+  FlblSe       := nil;
+  FpkeCondicao := nil;
+  FedtPesquisa := nil;
+
+  // Atribuindo novo valor do Tag do TabSheet, pois a verificação dos componentes
+  // será feita utilizando este parâmetro
+  tbsPesquisa.Tag := tbsPesquisa.Tag - 26;
+
+  // Atribuindo componentes novamente
+  for i := 0 To ComponentCount - 1 Do
+   if (Components[i] is TcxComboBox) and (TcxComboBox(Components[i]).Top = tbsPesquisa.Tag - scbPesquisa.VertScrollBar.Position) then
+    begin
+     if TcxComboBox(Components[i]).Tag = 1 then FpkeConLog := TcxComboBox(Components[i])
+     else if TcxComboBox(Components[i]).Tag = 2 then FpkeCampos := TcxComboBox(Components[i])
+     else if TcxComboBox(Components[i]).Tag = 4 then FpkeCondicao := TcxComboBox(Components[i])
+    end
+   else if (Components[i] is TLabel) and (TLabel(Components[i]).Top = tbsPesquisa.Tag + 4 - scbPesquisa.VertScrollBar.Position) then
+    begin
+     if TLabel(Components[i]).Tag = 3 then FlblSe := TLabel(Components[i]);
+    end
+   else if (Components[i] is TcxButtonEdit) and (TcxButtonEdit(Components[i]).Top = tbsPesquisa.Tag - scbPesquisa.VertScrollBar.Position) then
+    begin
+     if TcxButtonEdit(Components[i]).Tag = 5 then FedtPesquisa := TcxButtonEdit(Components[i]);
+    end;
+
+  // Habilitando os componentes
+  FpkeCampos.Enabled   := True;
+  FpkeCondicao.Enabled := True;
+  FedtPesquisa.Enabled := True;
+
+   if Assigned(FpkeConLog) then
+   begin
+    FpkeConLog.Enabled := True;
+    FpkeConLog.SetFocus;
+   end
+  else
+   FpkeCampos.SetFocus;
+
+  // Adicionando o campos da pesquisa atual na StringList
+  FStlCampos.Add(FpkeCampos.Text);
+
+  // Deletando ítens da pesquisa
+  FStlPsqCmp.Delete(FStlPsqCmp.Count - 1);
+  FStlPsqVle.Delete(FStlPsqVle.Count - 1);
+
+  // Habilitando botão para adicionar filtro
+  if Not btnAddPesq.Enabled then btnAddPesq.Enabled := True;
+
+  // Verificando habilitação do botão de remover filtro
+  if tbsPesquisa.Tag = 4 then btnRemPesq.Enabled := False;
+end;
+
+procedure TfrmLan.edtPesquisaPropertiesButtonClick(Sender: TObject;
+  AbsoluteIndex: Integer);
+var
+  Frm  : TForm;
+  Dts  : TDataSource;
+  GridDBTableView : TcxGridDBTableView;
+  GridLevel : TcxGridLevel;
+  Grid : TcxGrid;
+  Col  : TcxGridDBColumn;
+  Pnl  : TPanel;
+  Btn  : TBitBtn;
+  i    : Integer;
+  Fld  : TField;
+  stl  : TStringList;
+begin
+  if FpkeCampos.ItemIndex < 0 then
+   begin
+    TMsgFunctions.Error('É necessário informar o campo a ser pesquisado...');
+    FpkeCampos.SetFocus;
+    Exit;
+   end;
+
+  // Verificando se o ClientDataSet local está ativo para clonar os dados antes do filtro
+  if not cds.Active then
+   begin
+    cds.FieldDefs.Clear;
+    cds.Fields.Clear;
+
+    for i := 0 to ds.DataSet.FieldCount - 1 do
+     if ds.DataSet.Fields[i].FieldKind = fkData then
+      begin
+       cds.FieldDefs.Add(ds.DataSet.Fields[i].FieldName, ds.DataSet.Fields[i].DataType, ds.DataSet.Fields[i].Size);
+
+       case ds.DataSet.Fields[i].DataType of
+        ftDate    : Fld := TDateField.Create(Self);
+        ftInteger : Fld := TIntegerField.Create(Self);
+        ftString  : Fld := TStringField.Create(Self);
+        ftFMTBCD  : Fld := TFMTBCDField.Create(Self);
+        ftBCD     : Fld := TBCDField.Create(Self);
+        ftMemo    : Fld := TMemoField.Create(Self);
+        ftBlob    :
+         begin
+          Fld                      := TBlobField.Create(Self);
+          TBlobField(Fld).BlobType := TBlobField(ds.DataSet.Fields[i]).BlobType;
+         end;
+        ftTimeStamp : Fld := TSQLTimeStampField.Create(Self);
+       end;
+
+       Fld.FieldName := ds.DataSet.Fields[i].FieldName;
+       Fld.Size      := ds.DataSet.Fields[i].Size;
+
+       if IsPublishedProp(Fld, 'DisplayFormat') and (Fld is TFMTBCDField) then
+        SetPropValue(Fld, 'DisplayFormat', ',#0.00');
+
+       Fld.DataSet   := cds;
+
+       if Assigned(ds.DataSet.Fields[i].OnGetText) then
+        cds.FieldByName(ds.DataSet.Fields[i].FieldName).OnGetText := ds.DataSet.Fields[i].OnGetText;
+      end;
+
+    cds.CloneCursor(TClientDataSet(ds.DataSet), True);
+
+//    cds.SaveToFile(ApPath + '\Temp.xml', dfXML);
+//    cds.Close;
+
+//    cds.FileName := ApPath + '\Temp.xml';
+   end;
+
+  // Criando Form;
+  Frm             := TForm.Create(Self);
+  Frm.BorderStyle := bsToolWindow;
+  Frm.Caption     := 'Selecionar Valor';
+  Frm.Position    := poScreenCenter;
+  Frm.Font.Name   := 'Arial';
+  Frm.Height      := 370;
+  Frm.ShowHint    := True;
+  Frm.Width       := 325;
+
+  // Criando DataSource
+  Dts         := TDataSource.Create(Frm);
+  Dts.DataSet := cds;
+
+  // Criando GridDBTableView
+  Grid                                          := TcxGrid.Create(Frm);
+  GridLevel                                     := Grid.Levels.Add;
+  GridDBTableView                               := Grid.CreateView(TcxGridDBTableView) as TcxGridDBTableView;
+  GridDBTableView.OptionsData.Editing           := False;
+  GridDBTableView.OptionsSelection.InvertSelect := False;
+  GridDBTableView.OptionsView.Indicator         := False;
+  GridDBTableView.OptionsView.GroupByBox        := False;
+  GridDBTableView.OptionsBehavior.IncSearch     := True;
+  GridLevel.GridView                            := GridDBTableView;
+  Grid.Align                                    := alClient;
+  GridDBTableView.DataController.DataSource     := Dts;
+  Grid.LookAndFeel.Kind                         := lfFlat;
+  Grid.Parent                                   := Frm;
+
+  // Obtendo campo
+  for i := 0 To ds.DataSet.FieldCount - 1 Do
+   if ds.DataSet.Fields[i].DisplayLabel = FpkeCampos.Text then
+    Fld := ds.DataSet.Fields[i];
+
+  // Ordenando dados
+
+  if Fld.FieldKind <> fkLookup then
+   begin
+    cds.IndexDefs.Clear;
+    cds.IndexDefs.Add('ind', Fld.FieldName, []);
+    cds.IndexName := 'ind';
+   end;
+
+  if cds.Active then cds.Close;
+
+  cds.Open;
+
+  // Verificando ítens repetidos
+  cds.First;
+  stl := TStringList.Create;
+
+  while not cds.EOF and (Fld.FieldKind <> fkLookup) do
+   begin
+    if stl.IndexOf(cds.FieldByName(Fld.FieldName).Text) = -1 then
+     begin
+      stl.Add(cds.FieldByName(Fld.FieldName).Text);
+      cds.Next;
+     end
+    else cds.Delete;
+
+    // Verificando se todos os ítens já foram verificados
+    if cds.RecordCount = stl.Count then Break;
+   end;
+  stl.Free;
+
+  // Criando coluna de dados
+  Col := GridDBTableView.CreateColumn();
+  if Fld.FieldKind = fkLookup then Col.DataBinding.FieldName := Fld.LookupResultField
+  else Col.DataBinding.FieldName := Fld.FieldName;
+
+  // Verificando se o campo é lookup mostrar os dados da tabela de origem
+  if Fld.FieldKind = fkLookup then Dts.DataSet := Fld.LookupDataSet
+  else cds.FieldByName(Fld.FieldName).DisplayLabel := Fld.DisplayLabel;
+
+  // Criando Panel
+  Pnl            := TPanel.Create(Frm);
+  Pnl.Align      := alBottom;
+  Pnl.BevelOuter := bvLowered;
+  Pnl.Height     := 40;
+  Pnl.Parent     := Frm;
+
+  // Criando botão OK
+  Btn        := TBitBtn.Create(Frm);
+  Btn.Kind   := bkOK;
+  Btn.Left   := (Frm.Width div 2) - Btn.Width;
+  Btn.Parent := Pnl;
+  Btn.Top    := (Pnl.Height div 2) - (Btn.Height div 2);
+
+  // Criando botão Cancelar
+  Btn         := nil;
+  Btn         := TBitBtn.Create(Frm);
+  Btn.Kind    := bkCancel;
+  Btn.Caption := 'Cancelar';
+  Btn.Left    := Frm.Width div 2;
+  Btn.Parent  := Pnl;
+  Btn.Top     := (Pnl.Height div 2) - (Btn.Height div 2);
+  GridDBTableView.ApplyBestFit();
+  if Frm.ShowModal = mrOK then
+   begin
+    FedtPesquisa.EditValue := GridDBTableView.Controller.FocusedItem.EditValue;
+
+    if TStringFunctions.IsVarFull(FedtPesquisa.EditValue) then
+     begin
+      if FStlPsqVle.Count = 0 then FStlPsqVle.Add(GridDBTableView.Controller.FocusedItem.EditValue)
+      else FStlPsqVle[FStlPsqVle.Count - 1] := GridDBTableView.Controller.FocusedItem.EditValue;
+     end;
+   end;
+
+  Frm.Release;
+  cds.Close;
+
+  Pnl  := nil;
+  Col  := nil;
+  GridDBTableView := nil;
+  Grid := nil;
+  Dts  := nil;
+  Frm  := nil;
+end;
+
+procedure TfrmLan.btnImprimirClick(Sender: TObject);
+Var
+ sTit: String;
+begin
+ TRegFunctions.WriteRegisterStr(HKEY_CURRENT_USER, 'Software\Tron\Selecionado', 'Opcao', Self.Caption);
+
+ if ds.DataSet.RecordCount = 0 then
+  begin
+   TMsgFunctions.Atention('Não há dados a serem impressos.');
+  end
+ else
+  begin
+   if FindComponent('lblTit') <> nil then
+    sTit := TLabel(FindComponent('lblTit')).Caption
+   else
+    sTit := FBannerName;
+
+   ds.DataSet.DisableControls;
+//   FCG.SetReport(FReport, FPipeLine, ReportName, ReportChild, FNomEmp, sTit);
+//   FCG.Preview(FReport, Self.CodEmp);
+   ds.DataSet.EnableControls;
+  end;
+end;
+
+procedure TfrmLan.ppmCadPopup(Sender: TObject);
+begin
+ ppmNovo.Enabled      := btnIncluir.Enabled ;
+ ppmEditar.Enabled    := btnEditar.Enabled;
+ ppmExcluir.Enabled   := btnExcluir.Enabled;
+ btnExcluirCon.Enabled := btnExcluir.Enabled;
+ ppmPesquisa.Enabled  := Not btnGravar.Enabled;
+ ppmRelatorio.Enabled := ppmPesquisa.Enabled;
+end;
+
+procedure TfrmLan.ppmPesquisaClick(Sender: TObject);
+begin
+ pgcPrincipal.ActivePage := tbsPesquisa;
+end;
+
+procedure TfrmLan.RetornarConsultaPadrao;
+begin
+  if btnDesfPesq.Enabled and (FConsulta <> '') then
+   btnDesfPesq.Click;
+end;
+
+procedure TfrmLan.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+// if ds.DataSet.Tag < 3 then CanClose := Terminate(ds.DataSet, True, False, False, True);
+  if (ds.DataSet is TSimpleDataSet)and(TSimpleDataSet(ds.DataSet).Connection <> nil) then
+   begin
+    if TSQLConnection(TSimpleDataSet(ds.DataSet).Connection).InTransaction then
+     TSQLConnection(TSimpleDataSet(ds.DataSet).Connection).Rollback(Transacao);
+   end
+  else if (ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName) <> nil) and (TCustomSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).SQLConnection <> nil) then
+   begin
+    if TSQLConnection(TCustomSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).SQLConnection).InTransaction then
+     TSQLConnection(TCustomSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).SQLConnection).Rollback(Transacao);
+   end;
+end;
+
+procedure TfrmLan.btnPesquisarClick(Sender: TObject);
+var
+  sFrom, sWhere, sField, sSQL : String;
+  i                           : Integer;
+  bAux                        : Boolean;
+begin
+  pgcPesquisa.ActivePageIndex := 0;
+  ActiveControl               := nil;
+
+  pkeCampos.ModifiedAfterEnter := True;
+  pkeCampos.ValidateEdit(True);
+
+  // Verificando se as condições foram preenchidas
+  if FpkeConLog <> nil then // Condição lógica
+   if FpkeConLog.ItemIndex = -1 then
+    begin
+     TMsgFunctions.Error('É necessário informar a condição lógica do filtro...');
+     FpkeConLog.SetFocus;
+     Exit;
+    end;
+
+  // Campos
+  if FpkeCampos.ItemIndex = -1 then
+   begin
+    TMsgFunctions.Error('É necessário informar o campo a ser feito o filtro...');
+    FpkeCampos.SetFocus;
+    Exit;
+   end;
+  // Condição
+  if FpkeCondicao.ItemIndex = -1 then
+   begin
+    TMsgFunctions.Error('É necessário informar o critério do filtro...');
+    FpkeCondicao.SetFocus;
+    Exit;
+   end;
+
+  // Pesquisa
+  if TStringFunctions.IsEmpty(FedtPesquisa.Text) and (FpkeCondicao.ItemIndex <= 9) then
+   begin
+    TMsgFunctions.Error('É necessário informar o parâmetro do filtro...');
+    FedtPesquisa.SetFocus;
+    Exit;
+   end;
+
+  // Inicializando variáveis
+  sFrom := ''; sWhere := '';
+
+  // Verificando empresa
+  if FCodEmp > 0 then
+   sWhere := EmpFieldName + ' = ' + IntToStr(FCodEmp) + ' AND ';
+
+  // Verificando a necessidade de se ter uma clausula where pré-definida
+  if TStringFunctions.IsFull(FWhere) then sWhere := sWhere + FWhere;
+
+  // Retirando referência de compoenentes
+  FpkeConLog   := nil; FpkeCampos   := nil;
+  FpkeCondicao := nil; FedtPesquisa := nil;
+
+  // Obtendo condições
+  for i := 0 to ComponentCount - 1 Do
+   begin
+    if Components[i] is TcxComboBox then
+     begin
+      case TcxComboBox(Components[i]).Tag Of
+       1: // Condição lógica
+        FpkeConLog   := TcxComboBox(Components[i]);
+       2: // Campo
+        FpkeCampos   := TcxComboBox(Components[i]);
+       4: // Condição
+        FpkeCondicao := TcxComboBox(Components[i]);
+      end;
+     end
+    else if Components[i] is TcxButtonEdit then
+     if TcxButtonEdit(Components[i]).Tag = 5 then // Valor da pesquisa
+      begin
+       FedtPesquisa := TcxButtonEdit(Components[i]);
+       bAux         := True;
+      end;
+
+    // Verificando se o FpkePesquisa já foi atribuído
+    // (Levando em conta que os componentes serão atribuídos em ordem)
+
+    if Assigned(FedtPesquisa) and bAux then
+     begin
+      // Obtendo nome do campo
+//      sField := DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text);
+
+      if ds.DataSet.FieldByName(sField).FieldKind = fkLookup then
+       begin
+        { DONE : Verificar o alias da tabela da left table da cláusula join }
+//        sFrom := ' ' + Se(Vazio(sFrom), FTableName[1], '') + ' LEFT JOIN ' +
+//                 ds.DataSet.FieldByName(sField).Origin + ' ' + ds.DataSet.FieldByName(sField).Origin[2] + ' ON ' +
+//                 ds.DataSet.FieldByName(sField).Origin[2] + '.' + ds.DataSet.FieldByName(sField).LookupKeyFields + ' = ' +
+//                 FTableName[1] + '.' + ds.DataSet.FieldByName(sField).KeyFields;
+
+        // Certificando que o campo sField é o mesmo da tabela.
+        sField := ds.DataSet.FieldByName(sField).LookupResultField;
+       end;
+
+      // Condição lógica
+      if Assigned(FpkeConLog) then
+//       sWhere := sWhere + Se(FpkeConLog.ItemIndex = 0, ' AND ', ' OR ');
+
+//      if ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType in [ftString, ftMemo] then
+//       sWhere := UpperCase(sWhere + 'UDF_UPPER(UDF_COLLATEBR(' + sField + '))')
+//      else
+//       sWhere := UpperCase(sWhere + sField);
+
+      // Condição
+      { DONE : Terminar a verificação das condições do filtro }
+//      case FpkeCondicao.ItemIndex of
+//       0: // Igual a
+//        sWhere := sWhere + ' = ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       1: // Contém
+//        sWhere := sWhere + ' CONTAINING ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       2: // Não contém
+//        sWhere := sWhere + ' NOT CONTAINING ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       3: // Começar com
+//        sWhere := sWhere + ' LIKE ' + QuotedStr(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)] + '%');
+//       4: // Terminar com
+//        sWhere := sWhere + ' LIKE ' + QuotedStr('%' + FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)]);
+//       5: // Maior que
+//        sWhere := sWhere + ' > ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       6: // Menor que
+//        sWhere := sWhere + ' < ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       7: // Maior ou igual a
+//        sWhere := sWhere + ' >= ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       8: // Menor ou igual a
+//        sWhere := sWhere + ' <= ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       9: // Diferente de
+//        sWhere := sWhere + ' <> ' + FormatedCriteria(FStlPsqVle[FStlPsqCmp.IndexOf(FpkeCampos.Text)], ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType);
+//       10: // Nulo
+//        sWhere := sWhere + ' IS NULL';
+//       11: // Não Nulo
+//        sWhere := sWhere + ' IS NOT NULL';
+//      end;
+
+      // Setando valor da variável para que a condição do 'if' acima só se torne verdadeira
+      // da próxima vez que o FedtPesquisa receber uma nova referência
+      bAux := False;
+     end;
+   end;
+
+//  if ds.DataSet is TClientDataSet then
+//   begin
+//    // Verificando se o ClientDataSet local está ativo para clonar os dados antes do filtro
+//    if not cds.Active then
+//     begin
+//      cds.CloneCursor(TClientDataSet(ds.DataSet), True);
+//
+//      cds.SaveToFile(ApPath + '\Temp.xml', dfXML);
+//      cds.Close;
+//
+//      cds.FileName := ApPath + '\Temp.xml';
+//     end;
+//
+//    // Armazenando consulta original
+//    if Vazio(FConsulta) then
+//     for i := 0 to ds.DataSet.Owner.ComponentCount - 1 do
+//      if ds.DataSet.Owner.Components[i].Name = TClientDataSet(ds.DataSet).ProviderName then
+//       if Vazio (TClientDataSet(ds.DataSet).CommandText) then
+//        FConsulta := TSQLDataSet(TDataSetProvider(ds.DataSet.Owner.Components[i]).DataSet).CommandText
+//       else FConsulta := TClientDataSet(ds.DataSet).CommandText;
+//
+//    //TSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).Close;
+//
+//    // Verificando se é uma consulta personalizada ou um SELECT * FROM....
+//    if Pos('*', FConsulta) = 0 then
+//     begin
+//      sSQL := FConsulta;
+//      //Quando a consulta tiver INNER ou LEFT ou RIGHT significa que vai manter o from do jeito que está.
+//      if (Pos('INNER', FConsulta) < 0) OR (Pos('LEFT', FConsulta) < 0) or (Pos('RIGHT', FConsulta) < 0) then
+//       begin
+//        Delete(sSQL, Pos('FROM ', UpperCase(sSQL)) + 5, Pos('WHERE ', UpperCase(sSQL)) - (Pos('FROM ', UpperCase(sSQL)) + 6));
+//
+//        {Se o sFrom for vazio então é passado para ele a letra para representar a tabela.
+//         Isso pode ser útil caso os campos da tabela venhas com a <letra.nome do campo>.
+//         Quando o sFrom não está vazio ele já traz a letra que representa a tabela.
+//        }
+//        if sFrom = '' then
+//         sFrom := FTableName[1];
+//
+//        Insert(FTableName + ' ' + sFrom , sSQL, Pos('FROM ', UpperCase(sSQL)) + 5);
+//
+//       end;
+//      if Pos('WHERE', UpperCase(FConsulta)) = 0 then
+//       sSQL := FConsulta + ' WHERE ' + sWhere
+//      else
+//       begin
+//        sWhere := sWhere + ' AND ';
+//        Insert(sWhere, sSQL, Pos('WHERE', UpperCase(sSQL)) + 6);
+//       end;
+//     end
+//    else
+//     sSQL := 'SELECT * FROM ' + FTableName + sFrom + ' WHERE ' + sWhere;
+//
+//    TClientDataSet(ds.DataSet).Params.Clear;
+//    TClientDataSet(ds.DataSet).CommandText := sSQL;
+//   end;
+
+  ds.DataSet.Close;
+  ds.DataSet.Open;
+
+  if ds.DataSet.RecordCount = 0 then
+   begin
+    TMsgFunctions.Error('Não foram localizados registros com o filtro informado...');
+    btnDesfPesq.OnClick(Self);
+    pgcPesquisa.ActivePageIndex := 0;
+    pgcPesquisaChange(Self);
+    FpkeCampos.SetFocus;
+    Exit;
+   end;
+
+  btnDesfPesq.Enabled := True;
+
+  pgcPesquisa.ActivePageIndex := 1;
+  dbgGrid.SetFocus;
+end;
+
+procedure TfrmLan.btnDesfPesqClick(Sender: TObject);
+begin
+  btnDesfPesq.Enabled := False;
+//  if ds.DataSet is TClientDataSet then TClientDataSet(ds.DataSet).CommandText := FConsulta;
+  if ds.DataSet is TClientDataSet then
+  begin
+   TClientDataSet(ds.DataSet).CommandText := '';
+   TSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).Close;
+   TSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).CommandText := FConsulta;
+
+   if ParamsFromClientDataSet then
+    TClientDataSet(ds.DataSet).FetchParams;
+  end;
+
+  FConsulta := '';
+
+  ds.DataSet.Close;
+  ds.DataSet.Open;
+
+  // Voltando para o grid somente se foi o usuário que clicou no botão
+  if Sender <> Self then
+   begin
+    pgcPesquisa.ActivePageIndex  := 0;
+    pgcPrincipal.ActivePageIndex := 0;
+   end;
+end;
+
+procedure TfrmLan.btnLimparClick(Sender: TObject);
+begin
+  // Retirando filtros adicionais
+  while btnRemPesq.Enabled do btnRemPesq.Click;
+
+  // Limpando campos
+  FpkeCampos.Clear;
+  FpkeCondicao.Clear;
+  FedtPesquisa.Clear;
+end;
+
+procedure TfrmLan.dbgGridDBTableViewCustomDrawCell(
+	  Sender: TcxCustomGridTableView; ACanvas: TcxCanvas;
+	  AViewInfo: TcxGridTableDataCellViewInfo; var ADone: Boolean);
+
+begin
+  if FTemStatus then
+   if ds.DataSet.FieldByName(FStatus).AsString = 'I' then
+    ACanvas.Font.Color := clRed;
+end;
+
+procedure TfrmLan.FormActivate(Sender: TObject);
+var
+ Aux  : Integer;
+begin
+  if (FTemDataset)and(FDataSet.Active)and(TSimpleDataSet(FDataSet).RecordCount = 0) then
+   begin
+    TMsgFunctions.Error('Não há contas cadastradas para esta empresa.');
+    PostMessage(Handle, WM_CLOSE, 0, 0);
+    Abort;
+   end;
+
+  FAutoConfigureButtonExtra := True;
+
+  FExec := False;
+
+  // Carregando nomes dos campos
+  FStlCampos          := TStringList.Create;
+//  GetFieldsEditor(ds.DataSet, FStlCampos, False);
+  pkeCampos.Properties.Items.AddStrings(FStlCampos);
+  pkeCampos.ItemIndex := 0;
+
+  // Atribuindo referências de componentes para as variáveis
+  FpkeConLog   := nil;
+  FpkeCampos   := pkeCampos;
+  FpkeCondicao := pkeCondicao;
+  FedtPesquisa := edtPesquisa;
+
+  // Definindo tamanho do array de histórico
+  SetLength(FHist, ds.DataSet.FieldCount);
+
+  if ds.DataSet.Tag = 3 then btnIncluir.Click
+  else if ds.DataSet.Tag = 5 then HabBotoes(False, False);
+end;
+
+procedure TfrmLan.btnFecharPesqClick(Sender: TObject);
+begin
+  EnablePageControl;
+end;
+
+procedure TfrmLan.pgcPesquisaChange(Sender: TObject);
+begin
+//  btnExcluirCon.Enabled := not Sistema.MesAnoFechado(Sistema.EmpresaSelecionada.CodigoEmpresa, Sistema.MesAno,tac.Area);
+//  btnExcluirCon.Visible  := pgcPesquisa.ActivePageIndex = 1;
+end;
+
+procedure TfrmLan.dbgGridDBTableViewDblClick(Sender: TObject);
+begin
+  pgcPrincipal.ActivePageIndex := 0;
+end;
+
+procedure TfrmLan.dbgGridDBTableViewSdtColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+begin
+  //Ordena dxDBGrid com simpleDataset
+  ordenarSimpleDataset(TSimpleDataset(TcxGridDBTableView(sender).DataController.DataSource.DataSet), AColumn.EditValue);
+  TcxGridFunctions.ColumnOrder(TcxGridDBColumn(AColumn), False);
+end;
+
+procedure TfrmLan.dsStateChange(Sender: TObject);
+begin
+//  if (ds.DataSet is TSimpleDataSet)and(TSimpleDataSet(ds.DataSet).Connection <> nil) then
+//   begin
+//    Caption := Se(TSQLConnection(TSimpleDataSet(ds.DataSet).Connection).InTransaction and bInsert, FBannerName + ' - ' + 'Inserindo', FBannerName + ' - ' + GetState(ds.DataSet))
+//   end
+//  else if (ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName) <> nil) and (TCustomSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).SQLConnection <> nil) then
+//   Caption := Se(TSQLConnection(TCustomSQLDataSet(TDataSetProvider(ds.DataSet.Owner.FindComponent(TClientDataSet(ds.DataSet).ProviderName)).DataSet).SQLConnection).InTransaction and bInsert, FBannerName + ' - ' + 'Inserindo', FBannerName + ' - ' + GetState(ds.DataSet));
+
+  btnFirst.Enabled    := not (ds.DataSet.State in [dsInsert, dsEdit]);
+  btnPrevious.Enabled := btnFirst.Enabled;
+  btnLast.Enabled     := btnFirst.Enabled;
+  btnNext.Enabled     := btnFirst.Enabled;
+
+  if not FTemStatus then Exit;
+end;
+
+procedure TfrmLan.btnFirstClick(Sender: TObject);
+begin
+  ds.DataSet.First;
+  btnFirst.Enabled    := False;
+  btnPrevious.Enabled := btnFirst.Enabled;
+  btnLast.Enabled     := True;
+  btnNext.Enabled     := btnLast.Enabled;
+end;
+
+procedure TfrmLan.btnPreviousClick(Sender: TObject);
+begin
+  ds.DataSet.Prior;
+  btnFirst.Enabled    := not ds.DataSet.BOF;
+  btnPrevious.Enabled := btnFirst.Enabled;
+  btnLast.Enabled     := True;
+  btnNext.Enabled     := btnLast.Enabled;
+end;
+
+procedure TfrmLan.btnNextClick(Sender: TObject);
+begin
+  ds.DataSet.Next;
+  btnFirst.Enabled    := True;
+  btnPrevious.Enabled := btnFirst.Enabled;
+  btnLast.Enabled     := not ds.DataSet.EOF;
+  btnNext.Enabled     := btnLast.Enabled;
+end;
+
+procedure TfrmLan.btnLastClick(Sender: TObject);
+begin
+  ds.DataSet.Last;
+  btnFirst.Enabled    := True;
+  btnPrevious.Enabled := btnFirst.Enabled;
+  btnLast.Enabled     := False;
+  btnNext.Enabled     := btnLast.Enabled;
+end;
+
+procedure TfrmLan.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  i  : Integer;
+  ctr: TWinControl;
+  b  : Boolean;
+  s  : String;
+begin
+  {$IFDEF DEBUG}
+   if Shift = [ssShift] then
+    begin
+     if Key = VK_UP then
+     begin
+      Clipboard.AsText := Self.Name;
+      TMsgFunctions.Atention(Self.Name);
+     end;
+    end;
+  {$ENDIF}
+
+  // Verificando se a tabela está em modo somente visualização
+  if ds.DataSet.Tag = 5 then
+   begin
+    if Key = VK_ESCAPE then btnFechar.Click;
+    Exit;
+   end;
+
+  case pgcPrincipal.ActivePageIndex of
+   0:
+    begin
+     case ds.State of
+      dsBrowse :
+       begin
+        if Shift = [ssCtrl] then
+         begin
+          case Key of
+           VK_UP    : btnFirst.Click;
+           VK_DOWN  : btnLast.Click;
+           VK_LEFT  : btnPrevious.Click;
+           VK_RIGHT : btnNext.Click;
+           end; // case Key
+         end    // if Shift
+        else
+         case Key of
+          VK_F5      : ds.DataSet.Refresh;
+          VK_F9      : if btnImprimir.Enabled then btnImprimir.Click;
+          VK_RETURN  :
+           begin
+            Key := 0;
+            if Assigned(ds.DataSet) then
+             begin
+              if btnEditar.Enabled then btnEditar.Click
+             end
+            else
+             begin
+              if btnIncluir.Enabled then btnIncluir.Click;
+             end;
+           end;
+          VK_INSERT  : if btnIncluir.Enabled then btnIncluir.Click;
+          VK_DELETE  : if btnExcluir.Enabled then btnExcluir.Click;
+          VK_F3      : pgcPrincipal.ActivePage := tbsPesquisa;
+          VK_ESCAPE  : btnFechar.Click;
+          end;   // case Key
+       end;     // dsBrowse
+      dsInsert,dsEdit:
+       begin
+        case Key of
+         VK_RETURN :
+          begin
+           if (ActiveControl <> nil) then
+            begin
+             // Armazenando TabOrder do componentes atual
+             ctr := ActiveControl;
+             i   := ctr.TabOrder;
+
+             while not (ctr.Parent is TForm) do
+              begin
+               ctr := ctr.Parent;
+               i   := ctr.TabOrder;
+              end;
+
+             // Condição exclusiva para dxMaskEdit devido a problemas com execução do validate 2x
+
+             if (ActiveControl is TcxCustomMaskEdit) then
+              begin
+               if TcxCustomMaskEdit(ActiveControl).ModifiedAfterEnter then
+                Exit;
+              end
+             else if ActiveControl is TcxCustomDateEdit then
+              begin
+               if TcxCustomDateEdit(ActiveControl).ModifiedAfterEnter then
+                begin
+                 Key := 0;
+                 Exit;
+                end;
+              end
+             else if ActiveControl is TcxDBMemo then
+              begin
+               if TcxDBMemo(ActiveControl).ModifiedAfterEnter then
+                begin
+                 Perform(WM_NextDlgCtl, 0, 0);
+                 Key := 0;
+                 Exit;
+                end;
+              end
+             else if (ActiveControl.Parent is TcxCustomComboBox) and (TcxCustomComboBox(ActiveControl.Parent).DroppedDown) then
+              Exit;
+
+             if not((ActiveControl is TcxCustomMemo) or (ActiveControl is TcxCustomGrid) or (ActiveControl is TJvEditor)) then
+              begin
+               Key := 0;
+
+               // Passando para o próximo componente
+               Perform(WM_NextDlgCtl, 0, 0);
+
+               if (ActiveControl <> nil) then
+                begin
+                 // Verifição de alteração dos componentes da DevExpress
+                 if (ActiveControl is TcxCustomTextEdit) and TcxCustomTextEdit(ActiveControl).ModifiedAfterEnter then
+                  begin
+                   // Guardando texto
+                   s := TcxCustomTextEdit(ActiveControl).Text;
+                   // Invalidando entrada
+                   TcxCustomTextEdit(ActiveControl).Reset;
+
+                   // Verificando se o texto mudou
+                   if s <> TcxCustomTextEdit(ActiveControl).Text then
+                    begin
+                     TcxCustomTextEdit(ActiveControl).Text     := s;
+                     TcxCustomTextEdit(ActiveControl).ModifiedAfterEnter := True;
+                     Exit;
+                    end
+                  end;
+
+                 // Verificando se o TabOrder do componente atual é menor que o do anterior
+                 ctr := ActiveControl;
+                end;
+
+                while not (ctr.Parent is TForm) do
+                 ctr := ctr.Parent;
+
+                if not(ctr.Parent is TForm) then
+                 begin
+                  if (ctr.Parent.TabOrder < i) or ((ctr.Parent.TabOrder = i) and (iQtdCmp <= 1)) then
+                   if btnGravar.Enabled then btnGravar.Click
+                   else if TSpeedButton(FindComponent('btnImprimir')).Enabled then TSpeedButton(FindComponent('btnImprimir')).Click;
+                 end
+                else if((ctr.TabOrder = i) and (iQtdCmp = 1)) or (ctr.TabOrder < i) then
+                 if btnGravar.Enabled then btnGravar.Click
+                 else if TSpeedButton(FindComponent('btnImprimir')).Enabled then TSpeedButton(FindComponent('btnImprimir')).Click;
+              end;
+
+             ctr := nil;
+            end;
+          end;
+         VK_F9     : if (FindComponent('btnImprimir') <> nil) and TSpeedButton(FindComponent('btnImprimir')).Enabled then TSpeedButton(FindComponent('btnImprimir')).Click;
+         VK_F11    : if btnGravar.Enabled then btnGravar.Click;
+         VK_ESCAPE : if btnCancelar.Enabled then btnCancelar.Click;
+        end;
+
+        FPodeConfirmar := (pgcPrincipal.ActivePage = tbsFormulario);
+
+        if FPodeConfirmar then FExec := False;
+       end;  // dsInsert, dsEdir
+     end;   // Casse ds.State
+    end; // case pgcPrincipal.ActivePageIndex = 0
+   1:
+    begin
+     case Key of
+      VK_RETURN  :
+       begin
+        if ActiveControl is TcxGrid then
+         begin
+          pgcPrincipal.ActivePageIndex := 0;
+         end
+        else if Shift = [] then
+         begin
+          Perform(WM_NextDlgCtl, 0, 0);
+          Key := 0;
+         end;
+       end; // VK_RETURN
+      VK_ESCAPE  : btnFecharPesq.Click;
+      VK_INSERT  : if btnAddPesq.Enabled then btnAddPesq.Click;
+      76: // L
+       begin
+        if (Shift = [ssCtrl]) and btnLimpar.Enabled then btnLimpar.Click;
+       end;
+      VK_DELETE  :
+       begin
+        if (Shift = [ssShift]) and btnRemPesq.Enabled then
+         begin
+          btnRemPesq.Click;
+          Key := 0;
+         end
+        else if btnExcluirCon.Visible and btnExcluirCon.Enabled then btnExcluirCon.Click;
+
+       end; // VK_DELETE
+      VK_F11     : if btnPesquisar.Enabled then btnPesquisar.Click;
+      90         : if (Shift = [ssCtrl]) and btnDesfPesq.Enabled then btnDesfPesq.Click;
+     end; // case tecla
+    end; // case pgcPrincipal.ActivePageIndex = 1
+  end; // case pgcPrincipal.ActivePageIndex
+end;
+
+procedure TfrmLan.FormCreate(Sender: TObject);
+begin
+  FModName     := Self.Name;
+  FConfigGrid  := True;
+
+  // Armazenando caption em FBannerName. Será utilizado somente qdo não houver banner
+  FBannerName  := Caption;
+
+  EmpFieldName := 'CODEMP';
+end;
+
+procedure TfrmLan.pkeCamposExit(Sender: TObject);
+begin
+  pkeCampos.ModifiedAfterEnter := True;
+  pkeCampos.ValidateEdit(True);
+end;
+
+procedure TfrmLan.pkeCamposPropertiesValidate(Sender: TObject; var DisplayValue: Variant; var ErrorText: TCaption; var Error: Boolean);
+begin
+//  FedtPesquisa.Clear;
+  if TStringFunctions.IsEmpty(TcxComboBox(Sender).Text) then Exit;
+
+  if FStlPsqCmp.Count = 0 then FStlPsqCmp.Add(TcxComboBox(Sender).Text)
+  else FStlPsqCmp[FStlPsqCmp.Count - 1] := TcxComboBox(Sender).Text;
+
+//  FedtPesquisa.Clear;
+//  FedtPesquisa.Properties.Readonly := ((FpkeCampos.Text <> '') and Assigned(ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).OnSetText))
+//                           or (ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)) is TDateField);
+//
+//  if ds.DataSet.FieldByName(DisplayLabelToFieldName(ds.DataSet, FpkeCampos.Text)).DataType in [ftInteger, ftFloat, ftBCD] then
+//   begin
+//    FedtPesquisa.OnKeyPress := FedtPesquisaKeyPress;
+//    FedtPesquisa.Properties.MaxLength  := 9;
+//   end
+//  else
+//   begin
+//    FedtPesquisa.OnKeyPress := nil;
+//    FedtPesquisa.Properties.MaxLength  := 0;
+//   end;
+end;
+
+procedure TfrmLan.edtPesquisaPropertiesValidate(Sender: TObject; var DisplayValue: Variant; var ErrorText: TCaption; var Error: Boolean);
+begin
+  if FStlPsqVle.Count = 0 then FStlPsqVle.Add(TcxButtonEdit(Sender).Text)
+  else FStlPsqVle[FStlPsqVle.Count - 1] := TcxButtonEdit(Sender).Text;
+end;
+
+procedure TfrmLan.btnStatusClick(Sender: TObject);
+begin
+// FExec := False;
+// if MyMessage('Confirma a ' + Se(ds.DataSet.FieldByName(FStatus).asString = 'A', 'Suspensão', 'Reativação') + ' deste Registro?', 1, true) then
+//  begin
+//   ds.DataSet.Edit;
+//   ds.DataSet.FieldByName(FStatus).AsString := Se(ds.DataSet.FieldByName(FStatus).AsString = 'A','I','A');
+//   btnGravar.OnClick(btnStatus);
+//  end;
+end;
+
+procedure TfrmLan.HabilitaFoco(Sender: TObject);
+begin
+//  if Sender is TcxDBExtLookupComboBox then if TcxDBExtLookupComboBox(Sender).CanFocus then TcxDBExtLookupComboBox(Sender).SetFocus;
+  if Sender is TcxDBTextEdit          then if TcxDBTextEdit(Sender).CanFocus          then TcxDBTextEdit(Sender).SetFocus;
+  if Sender is TcxDBMaskEdit          then if TcxDBMaskEdit(Sender).CanFocus          then TcxDBMaskEdit(Sender).SetFocus;
+  if Sender is TcxDBLookupComboBox    then if TcxDBLookupComboBox(Sender).CanFocus    then TcxDBLookupComboBox(Sender).SetFocus;
+  if Sender is TcxDBDateEdit          then if TcxDBDateEdit(Sender).CanFocus          then TcxDBDateEdit(Sender).SetFocus;
+//  if Sender is TDBCurrencyEditN       then if TDBCurrencyEditN(Sender).CanFocus       then TDBCurrencyEditN(Sender).SetFocus;
+  if Sender is TDBRadioGroup          then if TDBRadioGroup(Sender).CanFocus          then TDBRadioGroup(Sender).SetFocus;
+  if Sender is TcxPageControl         then if TcxPageControl(Sender).CanFocus         then TcxPageControl(Sender).SetFocus;
+  if Sender is TcxGrid                then if TcxGrid(Sender).CanFocus                then TcxGrid(Sender).SetFocus;
+end;
+
+procedure TfrmLan.ordenarSimpleDataset(SimpleDataset: TSimpleDataset;
+  CamposOrdenacao: String);
+var
+  i: integer;
+  params: TParams;
+  sSql: String;
+begin
+  simpleDataset.Close;
+
+  params := TParams.Create;
+  for I := 0 to simpleDataset.DataSet.Params.Count - 1 do
+   params.AddParam( simpleDataset.DataSet.Params[i] );
+
+
+  sSql := simpleDataset.DataSet.CommandText;
+
+  i := Pos('Order', sSql);
+  if (i > 0) then
+    Delete(sSql, i, Length(sSql)-i+1);
+  sSql := sSql + ' Order by '+ CamposOrdenacao;
+
+  simpleDataset.DataSet.CommandText := sSql;
+
+  simpleDataset.DataSet.Params.AssignValues(params);
+
+  SimpleDataset.Open;
+end;
+
+procedure TfrmLan.FedtPesquisaKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (not (Key in ['0'..'9'])) and not (Key in [#8, #13]) then Key := #0;
+end;
+
+procedure TfrmLan.FormKeyPress(Sender: TObject; var Key: Char);
+begin
+  if Key = #13 then
+   begin
+    if ActiveControl is TcxCustomDateEdit then
+     begin
+      Key := #0;
+
+      if TcxCustomDateEdit(ActiveControl).ModifiedAfterEnter then
+       begin
+        //Key := #0;
+        TcxCustomDateEdit(ActiveControl).ValidateEdit(True);
+        if not TcxCustomDateEdit(ActiveControl).ModifiedAfterEnter then
+         Perform(WM_NEXTDLGCTL, 0, 0);
+       end;
+     end
+    else if (ActiveControl is TcxCustomMaskEdit) then
+     begin
+      if TcxCustomMaskEdit(ActiveControl).ModifiedAfterEnter then
+       begin
+        Key := #0;
+        TcxCustomMaskEdit(ActiveControl).ValidateEdit(True);
+        if not TcxCustomMaskEdit(ActiveControl).ModifiedAfterEnter then
+         Perform(WM_NEXTDLGCTL, 0, 0);
+       end;
+     end
+   end;
+end;
+
+procedure TfrmLan.CMExit(var Message: TCMFocusChanged);
+begin
+  if Assigned(FWinCtrl) then
+   begin
+    if IsPublishedProp(FWinCtrl, 'StyleController') then
+     begin
+      SetPropValue(FWinCtrl, 'Color', clWindow);
+
+      if IsPublishedProp(Message.Sender, 'StyleController') then
+       SetPropValue(Message.Sender, 'Color', clMoneyGreen);
+     end
+   end;
+
+  if IsPublishedProp(Message.Sender, 'StyleController') then  FWinCtrl := Message.Sender;
+end;
+
+procedure TfrmLan.dbgGridDBTableViewCdsColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+begin
+//Ordena dbGrid ligado a um ClientDataset
+  TCdsFunctions.DefineOrder(TClientDataset(TcxGridDBTableView(Sender).DataController.DataSource.DataSet), AColumn.EditValue, False);
+  TcxGridFunctions.ColumnOrder(TcxGridDBColumn(AColumn), False);
+end;
+
+procedure TfrmLan.dbgGridDBTableViewColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+var
+ i: Integer;
+ wait: TCursor;
+begin
+  wait := Screen.Cursor;
+  Screen.Cursor := crHourGlass;
+  for i := 0 to dbgGridDBTableView.ColumnCount - 1 do
+   begin
+    if dbgGridDBTableView.Columns[i] is TcxGridDBColumn then
+     dbgGridDBTableView.Columns[i].SortOrder := soNone;
+   end;
+
+  if IsPublishedProp(TCustomClientDataSet(ds.DataSet), 'IndexFieldNames') then
+   SetPropValue(TCustomClientDataSet(ds.DataSet), 'IndexFieldNames', TcxGridDBColumn(AColumn).DataBinding.FieldName);
+
+  AColumn.SortOrder := soDescending;
+  Screen.Cursor := wait;
+end;
+
+procedure TfrmLan.CfgObr;
+begin
+  if Assigned(stlComponent) then
+   stlComponent.Clear
+  else stlComponent := TStringList.Create;
+
+  iQtdCmp := 0;
+  Self.VerificarComponentes(Self);
+end;
+
+end.
+

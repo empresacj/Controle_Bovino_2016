@@ -1,0 +1,31 @@
+unit UfrmCadastroPropriedade;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Cadastro, Buttons, ExtCtrls;
+
+type
+  TfrmCadastroPropriedade = class(TfrmCadastro)
+    procedure btnCancelarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmCadastroPropriedade: TfrmCadastroPropriedade;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmCadastroPropriedade.btnCancelarClick(Sender: TObject);
+begin
+  inherited;
+  Close;
+end;
+
+end.

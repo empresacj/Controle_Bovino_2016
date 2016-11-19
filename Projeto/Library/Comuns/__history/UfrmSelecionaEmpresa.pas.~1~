@@ -1,0 +1,293 @@
+unit UfrmSelecionaEmpresa;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, UfrmDialog, ActnList, JvExControls, JvSpeedButton, JvNavigationPane,
+  DB, DBClient, SqlExpr, TronAccess, ExtCtrls, cxControls, cxContainer, cxEdit,
+  cxGroupBox, cxTextEdit, cxDBEdit, cxMaskEdit, cxGraphics, cxDropDownEdit,
+  cxLookupEdit, cxDBLookupEdit, cxDBLookupComboBox, cxStyles, cxCustomData,
+  cxFilter, cxData, cxDataStorage, cxDBData, cxGridCustomTableView,
+  cxGridTableView, cxGridDBTableView, cxGridCustomView, cxClasses, cxGridLevel,
+  cxGrid, cxPC, cxCurrencyEdit, cxButtonEdit, cxSpinEdit, cxMemo, cxCalendar,
+  cxDBExtLookupComboBox, cxCalc, cxTimeEdit ,cxCheckBox, cxTL, MaskEditN,
+  DBMaskEditN, CurrencyEditN, DBCurrencyEditN, cxDBTL, UNumberFunctions,
+  cxLookAndFeels, cxLookAndFeelPainters, dxSkinsCore, dxSkinscxPCPainter,
+  cxNavigator, dxSkinsDefaultPainters;
+
+
+type
+  TCompanyValidateEvent = procedure(var CodeCompany: integer; var Accept: boolean;
+                                    var ErrorText: string) of object;
+
+  TfrmSelecionaEmpresa = class;
+  TfrmSelecionaEmpresaClass = class of TfrmSelecionaEmpresa;
+
+  TfrmSelecionaEmpresa = class(TFormDialog)
+    cdsEmpresa: TClientDataSet;
+    dtsEmpresa: TDataSource;
+    TronAccess: TTronAccess;
+    dbg: TcxGrid;
+    dbgLevel: TcxGridLevel;
+    dbgDBTableView: TcxGridDBTableView;
+    dbgDBTableViewCODEMP: TcxGridDBColumn;
+    dbgDBTableViewRAZSOCEMP: TcxGridDBColumn;
+    dbgDBTableViewINSEMP: TcxGridDBColumn;
+    dbgDBTableViewSTSEMP: TcxGridDBColumn;
+    dbgDBTableViewINSESTEMP: TcxGridDBColumn;
+    procedure dbgDBTableViewColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+    procedure dbgDBTableViewDblClick(Sender: TObject);
+    procedure dbgDBTableViewCustomDrawCell(
+	  Sender: TcxCustomGridTableView; ACanvas: TcxCanvas;
+	  AViewInfo: TcxGridTableDataCellViewInfo; var ADone: Boolean);
+
+    procedure dbgDBTableViewKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure dbgDBTableViewMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+  private
+    { Private declarations }
+    FOnValidate: TCompanyValidateEvent;
+    FCodeCompany: integer;
+    FSQLConnection: TSQLConnection;
+    FCurrentColumn: integer;
+    class function CreateForm(const CodeCompany: integer): TfrmSelecionaEmpresa;
+
+    procedure LoadData;
+  protected
+    class function GetFormClass: TfrmSelecionaEmpresaClass; virtual;
+
+    function GetMessageWParam: Integer; override;
+    function GetSQL: string; virtual; abstract;
+    function GetSQLConnection: TSQLConnection; virtual; abstract;
+    procedure SetOrder(Column: TcxGridDBColumn; IgnoreColumn: Boolean = False);
+    procedure Validate(var CodeCompany: integer; var Accept: boolean;
+                       var ErrorText: string); virtual;
+
+    property CurrentColumn: integer read FCurrentColumn write FCurrentColumn;
+  public
+    { Public declarations }
+    procedure Initialize; override;
+  published
+    class function DialogSelect(var CodeCompany: integer): boolean;
+    class function PopupSelect(const StartPoint: TPoint; var CodeCompany: integer): boolean;
+
+    function Confirm: Boolean; override;
+
+    property CodeCompany: integer read FCodeCompany write FCodeCompany;
+    property SQLConnection: TSQLConnection read GetSQLConnection;
+    property OnValidate: TCompanyValidateEvent read FOnValidate write FOnValidate;
+  end;
+
+implementation
+
+uses UCdsFunctions, UcxGridFunctions, UMsgFunctions, UdbExpressFunctions, UConsts,
+  UTronServerUtils, UStringFunctions;
+
+var
+  frmSelecionaEmpresa: TfrmSelecionaEmpresa;
+
+{$R *.dfm}
+
+function TfrmSelecionaEmpresa.Confirm: Boolean;
+var
+  sErrorText: string;
+  iCode: integer;
+begin
+  Result := inherited Confirm;
+
+  if Result then
+   begin
+    iCode := cdsEmpresa.FieldByName('CODEMP').AsInteger;
+    if Assigned(Self.OnValidate) then
+     Self.OnValidate(iCode, Result, sErrorText);
+
+    if Result then
+     begin
+      Self.CodeCompany             := iCode;
+      // Setando caption do form principal
+      Application.MainForm.Caption := Format('%s - %s', [Application.Title, cdsEmpresa.FieldByName('RAZSOCEMP').AsString]);
+     end
+    else if TStringFunctions.IsFull(sErrorText) then
+     TMsgFunctions.Error(sErrorText);
+   end;
+end;
+
+class function TfrmSelecionaEmpresa.CreateForm(const CodeCompany: integer): TfrmSelecionaEmpresa;
+begin
+  Result := Self.Create(nil);
+  Result.dbgDBTableView.OptionsSelection.CellSelect := True;
+  Result.CodeCompany := CodeCompany;
+end;
+
+procedure TfrmSelecionaEmpresa.dbgDBTableViewColumnHeaderClick(Sender: TcxGridTableView; AColumn: TcxGridColumn);
+begin
+  inherited;
+  dbgDBTableView.Controller.FocusedItemIndex := AColumn.Index;
+  Self.SetOrder(AColumn as TcxGridDBColumn, True);
+end;
+
+procedure TfrmSelecionaEmpresa.dbgDBTableViewCustomDrawCell(
+	  Sender: TcxCustomGridTableView; ACanvas: TcxCanvas;
+	  AViewInfo: TcxGridTableDataCellViewInfo; var ADone: Boolean);
+
+begin
+  inherited;
+  if not AViewInfo.Selected and (Sender.Controller.FocusedRecord.Values[3] = 'I') then
+   ACanvas.Font.Color := clRed;
+end;
+
+procedure TfrmSelecionaEmpresa.dbgDBTableViewDblClick(Sender: TObject);
+begin
+  inherited;
+  actConfirm.Execute;
+end;
+
+procedure TfrmSelecionaEmpresa.dbgDBTableViewKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  inherited;
+  if Key in [VK_LEFT, VK_RIGHT] then
+   Self.SetOrder(dbgDBTableView.Columns[dbgDBTableView.Controller.FocusedItemIndex]);
+end;
+
+procedure TfrmSelecionaEmpresa.dbgDBTableViewMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+  if Assigned(dbgDBTableView.Controller.FocusedColumn) and (dbgDBTableView.Controller.FocusedColumnIndex <> -1) and
+     (dbgDBTableView.Controller.FocusedRowIndex <> -1) and Assigned(dbgDBTableView.Controller.FocusedItem) then
+   Sleep(1);
+
+  Self.SetOrder(dbgDBTableView.Columns[dbgDBTableView.Controller.FocusedColumnIndex]);
+end;
+
+class function TfrmSelecionaEmpresa.DialogSelect(var CodeCompany: integer): boolean;
+var
+  objForm: TfrmSelecionaEmpresa;
+begin
+  objForm := Self.CreateForm(CodeCompany);
+  Result  := objForm.ShowModal = mrOK;
+
+  if Result then
+   CodeCompany := objForm.CodeCompany;
+
+  objForm.Free;
+end;
+
+class function TfrmSelecionaEmpresa.GetFormClass: TfrmSelecionaEmpresaClass;
+begin
+  Result := Self;
+end;
+
+function TfrmSelecionaEmpresa.GetMessageWParam: Integer;
+begin
+  Result := Self.CodeCompany;
+end;
+
+procedure TfrmSelecionaEmpresa.Initialize;
+begin
+  inherited;
+  Self.NotifyMessage := WM_CHANGECOMPANY;
+  Self.LoadData;
+  Self.SetOrder(dbgDBTableView.Columns[0], True);
+
+  if Self.CodeCompany > 0 then
+   cdsEmpresa.FindKey([Self.CodeCompany]);
+
+  // Atribuindo evento de validação
+  Self.OnValidate := Self.Validate;
+
+  // Verificando se o principal tem TronAccess para carregar as configurações
+  if Assigned(Application.MainForm.FindComponent('TronAccess')) then
+   TronAccess.Assign(Application.MainForm.FindComponent('TronAccess'));
+end;
+
+procedure TfrmSelecionaEmpresa.LoadData;
+var
+  qry: TSQLQuery;
+begin
+  if cdsEmpresa.Active then
+   cdsEmpresa.Close;
+
+  qry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self.SQLConnection) as TSQLQuery;
+  qry.SQL.Add(Self.GetSQL);
+
+  TCdsFunctions.GetClientDataSet(qry, cdsEmpresa);
+
+  qry.Free;
+end;
+
+procedure TfrmSelecionaEmpresa.SetOrder(Column: TcxGridDBColumn;
+  IgnoreColumn: Boolean);
+begin
+  // Verificando se mudou a column
+  if IgnoreColumn or (Column.Index <> Self.CurrentColumn) then
+   begin
+    TCdsFunctions.DefineOrder(cdsEmpresa, Column.DataBinding.FieldName, False);
+    TcxGridFunctions.ColumnOrder(Column, False);
+   end;
+
+  Self.CurrentColumn := Column.Index;
+end;
+
+procedure TfrmSelecionaEmpresa.Validate(var CodeCompany: integer;
+  var Accept: boolean; var ErrorText: string);
+begin
+  // Validando empresa ativa
+  Accept := cdsEmpresa.FieldByName('STSEMP').AsString = 'A';
+
+  if Accept then
+   begin
+    // Verificando limite de empresas da licença
+    Accept := CanSelectEmpresa;
+
+    if Accept then
+     begin
+      //Verificando se o usuário pode acessar a empresa
+      TronAccess.CodEmp := CodeCompany;
+      Accept            := TronAccess.CanAccess('SelEmp');
+
+      if not Accept then
+       ErrorText := 'Você não tem permissão para acessar esta empresa.';
+     end
+    else ErrorText := 'O limite de empresas cadastradas foi ultrapassado. Para aumentar esse limite entre em contato com o departamento comercial da Tron Informática - 0800 62 7337';
+   end
+  else
+   begin
+    if cdsEmpresa.IsEmpty then
+     ErrorText := 'Não existem empresas cadastradas.'
+    else
+     ErrorText := 'Não é possível selecionar uma empresa inativa.';
+   end;
+
+  if not Accept then
+   begin
+    Application.MainForm.Caption := Application.Title;
+    TronAccess.CodEmp            := 0;
+   end;
+end;
+
+class function TfrmSelecionaEmpresa.PopupSelect(const StartPoint: TPoint;
+  var CodeCompany: integer): boolean;
+var
+  objForm: TfrmSelecionaEmpresa;
+begin
+  objForm := Self.CreateForm(CodeCompany);
+
+  // Definindo para que o formulário seja posicionado nas coordenadas definidas.
+  objForm.Position := poDesigned;
+
+  objForm.Left := StartPoint.X;
+  objForm.Top  := StartPoint.Y - objForm.Height;
+
+  Result := objForm.ShowModal = mrOK;
+
+  if Result then
+   CodeCompany := objForm.CodeCompany;
+
+  objForm.Free;
+end;
+
+end.

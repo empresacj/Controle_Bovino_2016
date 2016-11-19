@@ -1,0 +1,35 @@
+unit UfrmMovimentacaoTanqueLeite;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoTanqueLeite = class(TfrmMovimentacao)
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoTanqueLeite: TfrmMovimentacaoTanqueLeite;
+
+implementation
+
+uses
+  UfrmCadastroTanqueLeite;
+
+{$R *.dfm}
+
+procedure TfrmMovimentacaoTanqueLeite.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  inherited;
+  frmMovimentacaoTanqueLeite := nil;
+end;
+
+end.

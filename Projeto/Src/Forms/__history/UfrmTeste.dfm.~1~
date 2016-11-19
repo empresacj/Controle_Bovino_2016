@@ -1,0 +1,12 @@
+inherited frmMov1: TfrmMov1
+  Caption = 'frmMov1'
+  PixelsPerInch = 96
+  TextHeight = 14
+  inherited pnl: TPanel
+    inherited fraExportData: TfraExportData
+      inherited ImageList: TcxImageList
+        FormatVersion = 1
+      end
+    end
+  end
+end

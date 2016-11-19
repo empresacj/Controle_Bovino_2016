@@ -1,0 +1,40 @@
+program Bovino;
+
+uses
+  Forms,
+  UfrmSplash in '..\Src\Forms\UfrmSplash.pas' {frmSplash},
+  UMsgFunctions in '..\Library\Functions\UMsgFunctions.pas',
+  UStringFunctions in '..\Library\Functions\UStringFunctions.pas',
+  UDateTimeFunctions in '..\Library\Functions\UDateTimeFunctions.pas',
+  UDialogFunctions in '..\Library\Functions\UDialogFunctions.pas',
+  UNumberFunctions in '..\Library\Functions\UNumberFunctions.pas',
+  UDicionario in '..\Library\Comuns\UDicionario.pas',
+  UObjectFunctions in '..\Library\Comuns\UObjectFunctions.pas',
+  UPersistentObject in '..\Library\Comuns\UPersistentObject.pas',
+  UPersistentObjectDBX in '..\Library\Comuns\UPersistentObjectDBX.pas',
+  UDBFunctions in '..\Library\Comuns\UDBFunctions.pas',
+  USistemaException in '..\Library\Comuns\USistemaException.pas',
+  UMesAno in '..\Library\Comuns\UMesAno.pas',
+  URegFunctions in '..\Library\Comuns\URegFunctions.pas',
+  UControle in '..\Library\Controladores\UControle.pas',
+  USistemaControle in '..\Library\Controladores\USistemaControle.pas',
+  UCdsFunctions in '..\Library\Functions\UCdsFunctions.pas',
+  UIntObserver in '..\Library\Comuns\UIntObserver.pas',
+  UcxGridFunctions in '..\Library\Comuns\UcxGridFunctions.pas',
+  UValidationFunctions in '..\Library\Functions\UValidationFunctions.pas',
+  UfrmPrincipalBovino in '..\Src\Forms\UfrmPrincipalBovino.pas' {frmPrincipalBovino},
+  USistemaFunctions in '..\Library\Functions\USistemaFunctions.pas',
+  Cadastro in '..\Library\Class Cad\Cadastro.pas' {frmCadastro},
+  Movimentacao in '..\Library\Class Cad\Movimentacao.pas' {frmMovimentacao},
+  UfraExport in '..\Library\Class Cad\UfraExport.pas' {fraExport: TFrame};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TfrmSplash, frmSplash);
+  Application.CreateForm(TfrmCadastro, frmCadastro);
+  Application.CreateForm(TfrmMovimentacao, frmMovimentacao);
+  Application.Run;
+end.

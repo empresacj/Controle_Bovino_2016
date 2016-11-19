@@ -1,0 +1,32 @@
+unit UfrmMovimentacaoPasto;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoPasto = class(TfrmMovimentacao)
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoPasto: TfrmMovimentacaoPasto;
+
+implementation
+
+{$R *.dfm}
+
+procedure TfrmMovimentacaoPasto.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  inherited;
+  frmMovimentacaoPasto := nil;
+end;
+
+end.

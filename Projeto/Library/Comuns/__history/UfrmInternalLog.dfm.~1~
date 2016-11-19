@@ -1,0 +1,59 @@
+object InternalLog: TInternalLog
+  Left = 0
+  Top = 0
+  Caption = 'InternalLog'
+  ClientHeight = 256
+  ClientWidth = 590
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  FormStyle = fsStayOnTop
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object lstCriados: TListBox
+    Left = 0
+    Top = 25
+    Width = 289
+    Height = 231
+    Align = alLeft
+    ItemHeight = 13
+    TabOrder = 0
+  end
+  object lstDestruidos: TListBox
+    Left = 301
+    Top = 25
+    Width = 289
+    Height = 231
+    Align = alRight
+    ItemHeight = 13
+    TabOrder = 1
+  end
+  object pnl1: TPanel
+    Left = 0
+    Top = 0
+    Width = 590
+    Height = 25
+    Align = alTop
+    BevelOuter = bvNone
+    TabOrder = 2
+    object lblCriados: TLabel
+      Left = 8
+      Top = 6
+      Width = 6
+      Height = 13
+      Caption = '0'
+    end
+    object lblDestruidos: TLabel
+      Left = 301
+      Top = 6
+      Width = 6
+      Height = 13
+      Caption = '0'
+    end
+  end
+end
+

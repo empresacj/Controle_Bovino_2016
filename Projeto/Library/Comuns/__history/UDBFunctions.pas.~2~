@@ -1,0 +1,191 @@
+unit UDBFunctions;
+
+interface
+
+uses Classes, DB, Controls, SqlExpr;
+
+type
+  TDBFunctions = class(TPersistent)
+  published
+    class procedure AddParam(Params: TParams; const Name: string; DataType: TFieldType);
+    class procedure ClearParams(Params: TParams);
+    class function FormatDateToDatabase(const Date: TDate): string;
+    class function PodeExcluir(const SqlConection: TSqlConnection; const NomeTabela: String; const ChavePrimaria: array of String;
+                   const ValorChavePrimaria: array of Variant; const TabelaExcessao: array of String;
+                   out TabelaDependente: String; OrdenarTabelasDependentes: Boolean = False): Boolean;
+  end;
+
+implementation
+
+uses SysUtils, UdbExpressFunctions, Variants, UStringFunctions, StrUtils;
+
+{ TDBFunctions }
+class procedure TDBFunctions.AddParam(Params: TParams; const Name: string;
+  DataType: TFieldType);
+var
+  objParam: TParam;
+begin
+  if not Assigned(Params.FindParam(Name)) then
+   begin
+    objParam           := TParam(Params.Add);
+    objParam.Name      := Name;
+    objParam.DataType  := DataType;
+    objParam.ParamType := ptInput;
+   end;
+end;
+
+class procedure TDBFunctions.ClearParams(Params: TParams);
+var
+  i: Integer;
+begin
+  for i := 0 to Params.Count - 1 do
+   begin
+    if Params[i].ParamType = ptOutPut then Continue;
+
+    Params[i].AsString := '';
+    Params[i].Clear;
+   end;
+end;
+
+class function TDBFunctions.FormatDateToDatabase(const Date: TDate): string;
+begin
+  Result := FormatDateTime('yyyy-MM-dd', Date);
+end;
+
+class function TDBFunctions.PodeExcluir(const SqlConection: TSqlConnection; const NomeTabela: String; const ChavePrimaria: array of String;
+      const ValorChavePrimaria: array of Variant; const TabelaExcessao: array of String; out TabelaDependente: String;
+      OrdenarTabelasDependentes: Boolean): Boolean;
+var
+  sTabDep, sTabDepAnt, sWhere, sTab, sTabDsc, sTabDscAnt: String;
+  qry, qryAux: TSQLQuery;
+  c, j, i: Integer;
+  stl: TStringList;
+begin
+  Result := True;
+
+  // Obtendo campos da chave primária
+  qry := TdbExpressFunctions.SQLDataSet(TSQLQuery, SqlConection) as TSQLQuery;
+
+  qry.Close;
+  qry.SQL.Clear;
+  qry.SQL.Add('SELECT I1.RDB$INDEX_NAME, I1.RDB$RELATION_NAME, S.RDB$FIELD_NAME                            ');
+  qry.SQL.Add('FROM RDB$INDICES I1 INNER JOIN RDB$INDEX_SEGMENTS S ON I1.RDB$INDEX_NAME = S.RDB$INDEX_NAME ');
+  qry.SQL.Add('WHERE I1.RDB$RELATION_NAME = :sNomTab AND I1.RDB$UNIQUE_FLAG = 1                            ');
+  qry.SQL.Add('ORDER BY I1.RDB$RELATION_NAME, S.RDB$FIELD_POSITION                                         ');
+  qry.Params[0].AsString := NomeTabela;
+  qry.Open;
+  qry.First;
+  if not qry.Eof then
+   begin
+    // Ordenando os dados da chave primaria
+    stl := TStringList.Create;
+    while not qry.EOF do
+     begin
+      for i := Low(ChavePrimaria) to High(ChavePrimaria) do
+       if SameText(ChavePrimaria[i], Trim(qry.FieldByName('RDB$FIELD_NAME').AsString)) then
+        begin
+         // Verificando tipo de dado
+         case VarType(ValorChavePrimaria[i]) of
+          varString : stl.Add(QuotedStr(ValorChavePrimaria[i]));
+          varInteger: stl.Add(TStringFunctions.Extractor('.', ValorChavePrimaria[i]));
+          varDouble : stl.Add(TStringFunctions.Extractor('.', ValorChavePrimaria[i]));
+          varDate   : stl.Add(QuotedStr(FormatDateTime('dd.mm.yyyy', StrToDate(ValorChavePrimaria[i]))));
+         end;
+
+         Break;
+        end;
+      qry.Next;
+     end;
+   end
+  else Exit;
+
+  // Obtendo todas as tabelas dependentes excluindo as excessões
+  qry.Close;
+  qry.SQL.Clear;
+  qry.SQL.Add(' SELECT I1.RDB$RELATION_NAME, S.RDB$FIELD_NAME, R.RDB$DESCRIPTION                                   ');
+  qry.SQL.Add(' FROM RDB$INDICES I1 INNER JOIN RDB$INDICES        I2 ON I1.RDB$FOREIGN_KEY   = I2.RDB$INDEX_NAME   ');
+  qry.SQL.Add('                     INNER JOIN RDB$INDEX_SEGMENTS S  ON I1.RDB$INDEX_NAME    = S.RDB$INDEX_NAME    ');
+  qry.SQL.Add('                     INNER JOIN RDB$RELATIONS      R  ON I1.RDB$RELATION_NAME = R.RDB$RELATION_NAME ');
+  qry.SQL.Add(' WHERE I2.RDB$RELATION_NAME = :sNomTab                                                              ');
+  if Length(TabelaExcessao) > 0 then
+   qry.SQL.Add(' AND I1.RDB$RELATION_NAME NOT IN (' + TStringFunctions.ArrayToStr(TabelaExcessao) + ') ');
+  if OrdenarTabelasDependentes then
+   qry.SQL.Add(' ORDER BY I1.RDB$RELATION_NAME, S.RDB$INDEX_NAME, S.RDB$FIELD_POSITION ');
+
+  qry.Params[0].AsString := NomeTabela;
+  qry.Open;
+
+  TabelaDependente := '';
+  qry.First;
+  if not qry.EOF then
+   begin
+    qryAux := TdbExpressFunctions.SQLDataSet(TSQLQuery, SqlConection) as TSQLQuery;
+
+    sTabDep := Trim(qry.FieldByName('RDB$RELATION_NAME').AsString);
+    sTabDsc := Trim(qry.FieldByName('RDB$DESCRIPTION').AsString);
+    c       := 0;
+
+    // Consultando cada tabela dependente
+    while (not qry.EOF) or TStringFunctions.Cheio(sTabDep) do
+     begin
+      if SameText(sTabDep, Trim(qry.FieldByName('RDB$RELATION_NAME').AsString)) and (stl.Count > c) then
+       begin
+        // Montando cláusula where
+        sWhere := sWhere + ' AND ' + Trim(qry.FieldByName('RDB$FIELD_NAME').AsString) + ' = ' + stl[c];
+        // Incrementando índice da StringList
+        Inc(c);
+
+        // Iniciando montagem do comando
+        if TStringFunctions.Vazio(qryAux.CommandText) then
+         qryAux.CommandText := ' SELECT ' + Trim(qry.FieldByName('RDB$FIELD_NAME').AsString) + ' FROM ' + sTabDep;
+
+        qry.Next;
+       end
+      else
+       begin
+        // Formatando cláusula where
+        Delete(sWhere, 1, 5);
+
+        // Terminando de montar a consulta
+        qryAux.CommandText := qryAux.CommandText + ' WHERE ' + sWhere;
+        qryAux.Open;
+
+        // Verificando se há registros na tabela dependente
+        if qryAux.RecordCount > 0 then
+         begin
+          sTab   := sTab + '* ' + IfThen(TStringFunctions.Cheio(sTabDsc), sTabDsc, sTabDep) + ALine;
+          Result := False;
+
+          if (sTabDep <> '') and (sTabDsc = '') then
+           begin
+            if sTabDep <> sTabDepAnt then
+             TabelaDependente := TabelaDependente + '  ' + sTabDep + Aline;
+
+            sTabDepAnt := sTabDep;
+           end
+          else
+           begin
+            if sTabDsc <> sTabDscAnt then
+             TabelaDependente := TabelaDependente + '  ' + sTabDsc + Aline;
+
+            sTabDscAnt := sTabDsc;
+           end;
+         end;
+
+        qryAux.Close;
+        qryAux.CommandText := '';
+
+        sTabDep := Trim(qry.FieldByName('RDB$RELATION_NAME').AsString);
+        sTabDsc := Trim(qry.FieldByName('RDB$DESCRIPTION').AsString);
+        c       := 0;
+        sWhere  := '';
+       end;
+     end;
+   end;
+
+  qry.Close;
+  FreeAndNil(qryAux);
+  FreeAndNil(qry);
+end;
+
+end.

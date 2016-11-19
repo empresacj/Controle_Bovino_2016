@@ -1,0 +1,24 @@
+unit UfrmCadastroUsuario;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Cadastro, Buttons, ExtCtrls;
+
+type
+  TfrmCadastroUsuario = class(TfrmCadastro)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmCadastroUsuario: TfrmCadastroUsuario;
+
+implementation
+
+{$R *.dfm}
+
+end.

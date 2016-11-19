@@ -1,0 +1,24 @@
+unit UfrmCadastroMarcas;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Cadastro, Buttons, ExtCtrls;
+
+type
+  TfrmCadastroMarcas = class(TfrmCadastro)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmCadastroMarcas: TfrmCadastroMarcas;
+
+implementation
+
+{$R *.dfm}
+
+end.

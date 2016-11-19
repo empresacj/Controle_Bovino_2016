@@ -1,0 +1,628 @@
+unit UPersistentObjectDBX;
+
+interface
+
+uses UPersistentObject, SqlExpr, Contnrs, DB, Classes;
+
+type
+  TPersistentObjectDBX = class;
+  TPersistentObjectDBXClass = class of TPersistentObjectDBX;
+
+  TPersistentObjectDBXList = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TPersistentObjectDBX;
+    procedure SetItem(Index: Integer; const Value: TPersistentObjectDBX);
+  public
+    property Items[Index: Integer]: TPersistentObjectDBX read GetItem write SetItem; default;
+  end;
+
+  // Classe base de persistência usando dbExpress
+  TPersistentObjectDBX = class(TPersistentObject)
+  private
+    FSQLConnection: TSQLConnection;
+    FDependentConnectionObjects: TPersistentObjectDBXList;
+
+    class var FInsertSQL: TStringList;
+    class var FUpdateSQL: TStringList;
+    class var FClassList: TStringList;
+    class function GetClassList: TStringList; static;
+    class function GetInsertSQL: TStringList; static;
+    class function GetUpdateSQL: TStringList; static;
+
+    function BuildInsertSQL: string;
+    function BuildUpdateSQL: string;
+    function BuildValidateDuplicitySQL: String;
+  protected
+    // Método para setar o valor de um param tipo Double
+    procedure SetDoubleParam(Param: TParam; const Value: Double); virtual;
+    // Método para setar o valor de um param tipo Date
+    procedure SetDateParam(Param: TParam; const Value: TDateTime); virtual;
+    // Método para setar o valor de um param tipo Integer
+    procedure SetIntegerParam(Param: TParam; const Value: Integer); virtual;
+    // Método para setar o valor de um param tipo String
+    procedure SetStringParam(Param: TParam; const Value: String); virtual;
+
+    procedure InternalAssignValueToParams(Params: TParams); virtual;
+
+    procedure AssignValueToParams(Params: TParams);
+    procedure InitObject; override;
+    function Insert: Boolean; override;
+    function Update: Boolean; override;
+
+    procedure CheckInstance(var PersistentObject: TPersistentObjectDBX; AClass: TPersistentObjectDBXClass);
+    // Método de escrita da propriedade SQLConnection
+    procedure SetSQLConnection(const Value: TSQLConnection); virtual;
+
+    function GetAdditionalFilter(InitialFilter: String): string; virtual;
+    function GetFilterOrderClause(const RecordType: TRecordType = rtAll): String; virtual;
+
+    // Propriedade que define os objetos dependentes de conexão
+    property DependentConnectionObjects: TPersistentObjectDBXList read FDependentConnectionObjects;
+
+    class property ClassList: TStringList read GetClassList;
+    class property InsertSQL: TStringList read GetInsertSQL;
+    class property UpdateSQL: TStringList read GetUpdateSQL;
+  public
+    destructor Destroy; override;
+
+    class function GetTableName: String; override;
+
+    constructor Create(SQLConnection: TSQLConnection); overload; virtual;
+    // Construtor para já inicializar algumas propriedade do objeto
+    constructor Create(SQLConnection: TSQLConnection; const DefaultProperties: array of string;
+      const DefaultValues: array of Variant); overload; virtual;
+
+    constructor Create(const GetChildOnDemand: Boolean); override;
+
+    function IsDuplicated: Boolean; override;
+  published
+
+    function Find(const Filter: string; const RecordType: TRecordType = rtAll): Boolean; overload; override;
+    function Delete: Boolean; override;
+
+    property _SQLConnection: TSQLConnection read FSQLConnection write SetSQLConnection;
+  end;
+
+implementation
+
+uses UdbExpressFunctions, SysUtils, UStringFunctions, TypInfo, UDicionario,
+     UDBFunctions, StrUtils, USistemaException;
+
+{ TPersistentObjectDBX }
+
+constructor TPersistentObjectDBX.Create(SQLConnection: TSQLConnection);
+begin
+  inherited Create;
+
+  Self._SQLConnection := SQLConnection;
+end;
+
+/// <summary>
+/// Construtor para já inicializar algumas propriedade do objeto
+/// </summary>
+/// <param name="SQLConnection">Conexão SQLConnection</param>
+/// <param name="DefaultProperties">Propriedades a serem inicializadas</param>
+/// <param name="DefaultValues">Valores da propriedades</param>
+constructor TPersistentObjectDBX.Create(SQLConnection: TSQLConnection;
+  const DefaultProperties: array of string;
+  const DefaultValues: array of Variant);
+begin
+  inherited Create(DefaultProperties, DefaultValues);
+
+  Self._SQLConnection := SQLConnection;
+end;
+
+procedure TPersistentObjectDBX.AssignValueToParams(Params: TParams);
+begin
+  TDBFunctions.ClearParams(Params);
+  InternalAssignValueToParams(Params);
+end;
+
+function TPersistentObjectDBX.BuildInsertSQL: string;
+var
+  sInsert, sValues: string;
+  c, i: Integer;
+  sAux: String;
+  PropList: TPropList;
+  iIndiceClasse: Integer;
+begin
+  iIndiceClasse := ClassList.IndexOf(Self.ClassName);
+  if (iIndiceClasse = -1) or TStringFunctions.IsEmpty(InsertSQL[iIndiceClasse]) then
+   begin
+    // Iniciando instrução SQL
+    sInsert := Format('INSERT INTO %s (', [Self.GetTableName]);
+    sValues := 'VALUES (';
+
+    // Obtendo lista de propriedades do objeto
+    c    := GetPropList(Self.ClassInfo, tkProperties, @PropList);
+    sAux := '';
+    // Finalizando montagem da instrução
+    for i := 0 to Pred(c) do
+     // Propriedades iniciadas com '_' não devem ser persistidas
+     if Copy(PropList[i].Name, 1, 1) <> '_' then
+      begin
+       sInsert := sInsert + Format('%s%s', [sAux, Dicionario.Valor(PropList[i].Name)]);
+       sValues := sValues + Format('%s:%s', [sAux, PropList[i].Name]);
+
+       sAux := ', '
+      end;
+
+    // Fechando parêntes da instrução
+    sInsert := sInsert + ') ';
+    sValues := sValues + ')';
+
+    Result := sInsert + sValues;
+
+    if iIndiceClasse = -1 then
+     begin
+      iIndiceClasse := ClassList.Add(Self.ClassName);
+
+      if iIndiceClasse <= InsertSQL.Count - 1 then
+       begin
+        InsertSQL.Insert(iIndiceClasse, Result);
+        UpdateSQL.Insert(iIndiceClasse, '');
+       end
+      else
+       begin
+        InsertSQL.Add(Result);
+        UpdateSQL.Add('');
+       end;
+     end
+    else InsertSQL[iIndiceClasse] := Result;
+   end
+  else Result := InsertSQL[iIndiceClasse];
+end;
+
+function TPersistentObjectDBX.BuildUpdateSQL: string;
+var
+  sUpdate, sWhere, sField, sParam: string;
+  c, i: Integer;
+  sAux: String;
+  PropList: TPropList;
+  iIndiceClasse: Integer;
+  sAuxWhere: string;
+begin
+  iIndiceClasse := ClassList.IndexOf(Self.ClassName);
+  if (iIndiceClasse = -1) or TStringFunctions.IsEmpty(UpdateSQL[iIndiceClasse]) then
+   begin
+    // Iniciando instrução SQL
+    sUpdate := Format('UPDATE %s SET ', [Self.GetTableName]);
+    sWhere := ' WHERE ';
+
+    // Obtendo lista de propriedades do objeto
+    c    := GetPropList(Self.ClassInfo, tkProperties, @PropList);
+    sAux := '';
+    sAuxWhere := '';
+    // Finalizando montagem da instrução
+    for i := 0 to Pred(c) do
+     // Propriedades iniciadas com '_' não devem ser persistidas
+     if Copy(PropList[i].Name, 1, 1) <> '_' then
+      begin
+       sField := Dicionario.Valor(PropList[i].Name);
+
+       sUpdate := sUpdate + Format('%s%s = :%s', [sAux, sField, PropList[i].Name]);
+
+//       if TStringFunctions.Contains(PropList[i].Name, Self.GetIdField, False) then
+//        begin
+//         sWhere := sWhere + Format('%s%s = :Old_%s', [sAuxWhere, sField, PropList[i].Name]);
+//         sAuxWhere := ' AND ';
+//        end;
+
+       sAux := ', '
+      end;
+
+    Result := sUpdate + sWhere;
+
+    if iIndiceClasse = -1 then
+     begin
+      iIndiceClasse := ClassList.Add(Self.ClassName);
+
+      if iIndiceClasse <= InsertSQL.Count - 1 then
+       begin
+        InsertSQL.Insert(iIndiceClasse, '');
+        UpdateSQL.Insert(iIndiceClasse, Result);
+       end
+      else
+       begin
+        InsertSQL.Add('');
+        UpdateSQL.Add(Result);
+       end;
+     end
+    else UpdateSQL[iIndiceClasse] := Result;
+   end
+  else Result := UpdateSQL[iIndiceClasse];
+end;
+
+
+function TPersistentObjectDBX.BuildValidateDuplicitySQL: String;
+var
+  sSelect, sWhere: string;
+//  aFieldIDArray: TArrayStr;
+  i: Integer;
+  flag: Boolean;
+begin
+//  aFieldIDArray := Self.GetIdField;
+//  if Length(aFieldIDArray) = 0 then
+//   raise ESistemaException.Create('O método ''GetIdField'' não foi implementado na classe ' + Self.ClassName);
+
+  sSelect := Format('SELECT COUNT(*) AS QTD FROM %s ', [Self.GetTableName]);
+  sWhere  := 'WHERE ';
+  flag    := False;
+
+//  for i := 0 to (Length(aFieldIDArray) - 1) do
+//   begin
+//    if flag then sWhere := sWhere + ' AND ';
+//    sWhere := sWhere + Format('(%s = :%s)', [Dicionario.Valor(aFieldIDArray[i]), aFieldIDArray[i]]);
+//
+//    flag := True;
+//   end;
+
+  Result := sSelect + sWhere;
+end;
+
+procedure TPersistentObjectDBX.CheckInstance(
+  var PersistentObject: TPersistentObjectDBX; AClass: TPersistentObjectDBXClass);
+begin
+  if not Assigned(PersistentObject) then
+   begin
+    PersistentObject := AClass.Create(Self._SQLConnection);
+    Self.DependentConnectionObjects.Add(PersistentObject);
+   end;
+end;
+
+constructor TPersistentObjectDBX.Create(const GetChildOnDemand: Boolean);
+begin
+  Self.Create(nil);
+  Self.GetChildOnDemand := GetChildOnDemand;
+end;
+
+function TPersistentObjectDBX.Delete: Boolean;
+var
+  i: integer;
+  sAux: string;
+  objQry: TSQLQuery;
+begin
+  objQry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self._SQLConnection) as TSQLQuery;
+
+  try
+   sAux := '';
+
+   // Montando instrução de deleção
+   objQry.SQL.Add(Format('DELETE FROM %s', [Self.GetTableName]));
+   objQry.SQL.Add('WHERE ');
+
+   // Obtendo valor dos campos chave
+//   for i := Low(Self.GetIdField) to High(Self.GetIdField) do
+//    begin
+//     objQry.SQL.Add(Format('%s %s = :%s', [sAux, Dicionario.Valor(Self.GetIdField[i]), Self.GetIdField[i]]));
+//
+//     sAux := 'AND';
+//    end;
+
+   Self.AssignValueToParams(objQry.Params);
+
+   objQry.ExecSQL();
+   Self.Clear;
+
+   Result := True;
+  finally
+   objQry.Free;
+  end;
+end;
+
+procedure TPersistentObjectDBX.InternalAssignValueToParams(Params: TParams);
+var
+  i: Integer;
+  PropInfo: PPropInfo;
+  sParam, sField: string;
+  bIsOldValue, bHasParam: boolean;
+  objParam: TParam;
+begin
+  // Atribuindo valores para os parâmetros
+  for i := 0 to Params.Count - 1 do
+   begin
+    sParam       := Params[i].Name;
+    bIsOldValue  := Pos('Old_', sParam) > 0;
+
+    if bIsOldValue then
+     begin
+      System.Delete(sParam, 1, 4);
+      sField    := Dicionario.Valor(sParam);
+      bHasParam := Assigned(Self.OriginalIDValues.FindParam(sField));
+     end
+    else bHasParam := False;
+
+    if bHasParam then
+     begin
+      objParam := Self.OriginalIDValues.FindParam(sField);
+      case objParam.DataType of
+       ftInteger: Params[i].AsInteger := objParam.AsInteger;
+       ftDate     : Params[i].AsDate := objParam.AsDate;
+       ftFloat: Params[i].AsFloat := objParam.AsFloat;
+       ftString,ftFixedChar: Params[i].AsString := objParam.AsString;
+      end;
+     end
+    else
+     begin
+      // Verificando se a propriedade não é nula
+      if not Self.IsPropertyNull(sParam) then
+       case PropType(Self, sParam) of
+        tkInteger: Params[i].AsInteger := GetOrdProp(Self, sParam);
+        tkFloat:
+         begin
+          // Verificando se o tipo é date time
+          PropInfo := GetPropInfo(Self, sParam);
+          if TStringFunctions.Contains(PropInfo^.PropType^.Name, ['TDateTime', 'TDate'], False) then
+           Params[i].AsDate := GetFloatProp(Self, sParam)
+          else
+           Params[i].AsFloat := GetFloatProp(Self, sParam);
+         end;
+        tkChar, tkString, tkLString, tkUString:
+         begin
+          PropInfo := GetPropInfo(Self, sParam);
+          if SameText(PropInfo^.PropType^.Name, 'TMemoString') then
+           Params[i].AsMemo := GetStrProp(Self, sParam)
+          else
+           Params[i].AsString := GetStrProp(Self, sParam);
+         end;
+       end;
+     end;
+   end;
+end;
+
+destructor TPersistentObjectDBX.Destroy;
+begin
+  FDependentConnectionObjects.Free;
+  inherited;
+end;
+
+/// <summary>
+/// Método para efetuar pesquisa no banco de acordo com o Filtro
+/// </summary>
+/// <param name="Filter">Filtro da pesquisa</param>
+/// <returns>True se achou objeto e False caso contrário</returns>
+function TPersistentObjectDBX.Find(const Filter: string; const RecordType: TRecordType): Boolean;
+var
+  qry: TSQLQuery;
+  i: Integer;
+  sCampo, EditFilter: string;
+begin
+  // Instanciando query
+  qry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self._SQLConnection) as TSQLQuery;
+
+  // Montando consulta
+  case RecordType of
+   rtAll: qry.SQL.Add(Format('SELECT * FROM %s', [Self.GetTableName]));
+   rtFirst, rtLast: qry.SQL.Add(Format('SELECT FIRST 1 * FROM %s', [Self.GetTableName]));
+  end;
+
+  EditFilter := Filter + Self.GetAdditionalFilter(Filter);
+
+  // Verificando se foi passado Filter
+  if TStringFunctions.IsFull(EditFilter) then
+   qry.SQL.Add(Format('WHERE %s', [EditFilter]));
+
+  if RecordType in [rtFirst, rtLast] then
+   qry.SQL.Add(GetFilterOrderClause(RecordType));
+
+  // Abrindo consulta
+  qry.Open;
+  // Verificando resultado
+  Result := not qry.IsEmpty;
+  // Inicilando valores
+  Self.Clear;
+  // Setando valores se o resultado foi verdadeiro
+  if Result then
+   // Loop nos campos retornados para verificar os campos que serão setados
+   for i := 0 to qry.FieldCount - 1 do
+    begin
+     sCampo := Dicionario.Significado(qry.Fields[i].FieldName);
+     // Verificando se a propriedade com o nome do campo é publicada para setar o valor
+     if IsPublishedProp(Self, sCampo) then
+      if not qry.Fields[i].IsNull then
+       begin
+//        if TStringFunctions.Contains(sCampo, Self.GetIdField, False) then
+//         SetOriginalIdFieldValue(qry.Fields[i]);
+
+        SetPropValue(Self, sCampo, qry.Fields[i].Value);
+       end;
+    end;
+
+  // Fechando e destruindo a query
+  qry.Free;
+
+  // Definindo se o objeto é novo de acordo com o resultado da função
+  Self.New := not Result;
+
+  if Self.New then Self.SetDefaultValues;
+end;
+
+function TPersistentObjectDBX.GetAdditionalFilter(
+  InitialFilter: String): string;
+begin
+  Result := '';
+end;
+
+class function TPersistentObjectDBX.GetClassList: TStringList;
+begin
+  if not Assigned(FClassList) then
+   begin
+    FClassList := TStringList.Create;
+    FClassList.Sorted := True;
+   end;
+
+  Result := FClassList;
+end;
+
+class function TPersistentObjectDBX.GetInsertSQL: TStringList;
+begin
+  if not Assigned(FInsertSQL) then
+   FInsertSQL := TStringList.Create;
+
+  Result := FInsertSQL;
+end;
+
+function TPersistentObjectDBX.GetFilterOrderClause(const RecordType: TRecordType): String;
+begin
+//  Result := (Format('ORDER BY %s %s', [Dicionario.Valor(Self.GetIdField[0]), IfThen(RecordType = rtLast, 'DESC')]));
+end;
+
+class function TPersistentObjectDBX.GetTableName: String;
+begin
+  Result := Dicionario.Valor(Self.ClassName);
+end;
+
+class function TPersistentObjectDBX.GetUpdateSQL: TStringList;
+begin
+  if not Assigned(FUpdateSQL) then
+   FUpdateSQL := TStringList.Create;
+
+  Result := FUpdateSQL;
+end;
+
+procedure TPersistentObjectDBX.InitObject;
+begin
+  inherited;
+  FDependentConnectionObjects := TPersistentObjectDBXList.Create(False);
+end;
+
+function TPersistentObjectDBX.Insert: Boolean;
+var
+  objQry: TSQLQuery;
+begin
+  Result := False;
+  // Instanciando objetos
+  objQry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self._SQLConnection) as TSQLQuery;
+
+  try
+   objQry.SQL.Add(BuildInsertSQL);
+   Self.AssignValueToParams(objQry.Params);
+
+   objQry.ExecSQL();
+   
+   Result := True;
+   Self.New := False;
+  finally
+   objQry.Free;
+  end;
+end;
+
+procedure TPersistentObjectDBX.SetDateParam(Param: TParam; const Value: TDateTime);
+begin
+  if Value <> NullDoubleValue(Param.Name) then
+   Param.AsDate := Value;
+end;
+
+procedure TPersistentObjectDBX.SetDoubleParam(Param: TParam;
+  const Value: Double);
+begin
+  if Value <> NullDoubleValue(Param.Name) then
+   Param.AsFloat := Value;
+end;
+
+procedure TPersistentObjectDBX.SetIntegerParam(Param: TParam;
+  const Value: Integer);
+begin
+  if Value <> NullIntegerValue(Param.Name) then
+   Param.AsInteger := Value;
+end;
+
+procedure TPersistentObjectDBX.SetSQLConnection(const Value: TSQLConnection);
+var
+  i: Integer;
+begin
+  FSQLConnection := Value;
+
+  for i := 0 to Self.DependentConnectionObjects.Count - 1 do
+   Self.DependentConnectionObjects[i]._SQLConnection := Value;
+end;
+
+procedure TPersistentObjectDBX.SetStringParam(Param: TParam; 
+  const Value: String);
+begin
+  if Value <> NullStringValue(Param.Name) then
+   Param.AsString := Value;
+end;
+
+function TPersistentObjectDBX.Update: Boolean;
+var
+  objQry: TSQLQuery;
+begin
+  Result := False;
+  // Instanciando objetos
+  objQry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self._SQLConnection) as TSQLQuery;
+
+  try
+   objQry.SQL.Add(Self.BuildUpdateSQL);
+   Self.AssignValueToParams(objQry.Params);
+
+   objQry.ExecSQL();
+   
+   Result := True;
+  finally
+   objQry.Free;
+  end;
+end;
+
+function TPersistentObjectDBX.IsDuplicated: Boolean;
+var
+  objQry: TSQLQuery;
+  bChangePrimaryKey: Boolean;
+  iRegistrosBanco: Integer;
+
+  sField: string;
+  i: Integer;
+  OldObjParam: TParam;
+//  aFieldIDArray: TArrayStr;
+begin
+  objQry := TdbExpressFunctions.SQLDataSet(TSQLQuery, Self._SQLConnection) as TSQLQuery;
+
+  try
+   objQry.SQL.Add(BuildValidateDuplicitySQL);
+   Self.AssignValueToParams(objQry.Params);
+
+   objQry.Open;
+   iRegistrosBanco   := objQry.FieldByName('QTD').AsInteger;
+   bChangePrimaryKey := False;
+
+//   aFieldIDArray := Self.GetIdField;
+//
+//   for i := 0 to (Length(aFieldIDArray) - 1) do
+//    begin
+//     sField := Dicionario.Valor(aFieldIDArray[i]);
+//
+//     if not(Self.IsPropertyNull(aFieldIDArray[i])) then
+//      begin
+//       OldObjParam := Self.OriginalIDValues.FindParam(sField);
+//       if Assigned(OldObjParam) then
+//        begin
+//         case OldObjParam.DataType of
+//          ftInteger: bChangePrimaryKey             := OldObjParam.AsInteger <> GetOrdProp(Self, aFieldIDArray[i]);
+//          ftFloat: bChangePrimaryKey               := FormatFloat('0.00', OldObjParam.AsFloat) <> FormatFloat('0.00', GetFloatProp(Self, aFieldIDArray[i]));
+//          ftString,ftFixedChar: bChangePrimaryKey  := OldObjParam.AsString  <> GetStrProp(Self, aFieldIDArray[i]);
+//          ftdate: bChangePrimaryKey                := OldObjParam.AsDate    <> GetFloatProp(Self, aFieldIDArray[i]);
+//         end;
+//        end;
+//      end;
+//     if bChangePrimaryKey then Break;
+//    end;
+   Result  := ((Self.New) or (bChangePrimaryKey)) and (iRegistrosBanco <> 0);
+  finally
+   objQry.Free;
+  end;
+end;
+
+{ TPersistentObjectDBXList }
+
+function TPersistentObjectDBXList.GetItem(Index: Integer): TPersistentObjectDBX;
+begin
+  Result := inherited GetItem(Index) as TPersistentObjectDBX;
+end;
+
+procedure TPersistentObjectDBXList.SetItem(Index: Integer;
+  const Value: TPersistentObjectDBX);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+end.

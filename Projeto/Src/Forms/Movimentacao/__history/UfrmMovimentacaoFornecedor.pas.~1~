@@ -1,0 +1,32 @@
+unit UfrmMovimentacaoFornecedor;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, cxGraphics, cxControls, cxLookAndFeels,
+  cxLookAndFeelPainters, cxStyles, dxSkinsCore, dxSkinsDefaultPainters,
+  dxSkinscxPCPainter, cxCustomData, cxFilter, cxData, cxDataStorage, cxEdit,
+  cxNavigator, DB, cxDBData, cxGridLevel, cxClasses, cxGridCustomView,
+  cxGridCustomTableView, cxGridTableView, cxGridDBTableView, cxGrid, TabListN,
+  Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacao2 = class(TfrmMovimentacao)
+    frmMovimentacaoFornecedorDBTableView1: TcxGridDBTableView;
+    frmMovimentacaoFornecedorLevel1: TcxGridLevel;
+    frmMovimentacaoFornecedor: TcxGrid;
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacao2: TfrmMovimentacao2;
+
+implementation
+
+{$R *.dfm}
+
+end.

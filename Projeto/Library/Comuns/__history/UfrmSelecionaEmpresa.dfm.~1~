@@ -1,0 +1,118 @@
+inherited frmSelecionaEmpresa: TfrmSelecionaEmpresa
+  Caption = 'Sele'#231#227'o de Empresa'
+  ClientHeight = 300
+  ClientWidth = 619
+  ExplicitWidth = 619
+  ExplicitHeight = 300
+  PixelsPerInch = 96
+  TextHeight = 13
+  inherited Panel1: TPanel
+    Width = 619
+    Height = 300
+    ExplicitWidth = 619
+    ExplicitHeight = 300
+    inherited pnlHeader: TJvNavPanelHeader
+      Width = 611
+      ExplicitWidth = 611
+      DesignSize = (
+        611
+        23)
+      inherited btnClose: TJvSpeedButton
+        Left = 591
+        ExplicitLeft = 472
+      end
+    end
+    object dbg: TcxGrid
+      Left = 4
+      Top = 27
+      Width = 611
+      Height = 269
+      TabOrder = 1
+      object dbgDBTableView: TcxGridDBTableView
+		OptionsView.NoDataToDisplayInfoText = ' '
+        OnDblClick = dbgDBTableViewDblClick
+        OnKeyUp = dbgDBTableViewKeyUp
+        OnMouseUp = dbgDBTableViewMouseUp
+        Navigator.Buttons.CustomButtons = <>
+        OnCustomDrawCell = dbgDBTableViewCustomDrawCell
+        DataController.DataSource = dtsEmpresa
+        DataController.Summary.DefaultGroupSummaryItems = <>
+        DataController.Summary.FooterSummaryItems = <>
+        DataController.Summary.SummaryGroups = <>
+        OptionsBehavior.ImmediateEditor = False
+        OptionsBehavior.IncSearch = True
+        OptionsCustomize.ColumnSorting = False
+        OptionsData.Deleting = False
+        OptionsData.DeletingConfirmation = False
+        OptionsData.Editing = False
+        OptionsData.Inserting = False
+        OptionsSelection.HideFocusRectOnExit = False
+        OptionsView.NoDataToDisplayInfoText = ' '
+        OptionsView.GroupByBox = False
+        OnColumnHeaderClick = dbgDBTableViewColumnHeaderClick
+        object dbgDBTableViewCODEMP: TcxGridDBColumn
+          Caption = 'C'#243'digo'
+          DataBinding.FieldName = 'CODEMP'
+          PropertiesClassName = 'TcxMaskEditProperties'
+          Width = 60
+        end
+        object dbgDBTableViewRAZSOCEMP: TcxGridDBColumn
+          Caption = 'Raz'#227'o Social'
+          DataBinding.FieldName = 'RAZSOCEMP'
+          PropertiesClassName = 'TcxMaskEditProperties'
+          Width = 300
+        end
+        object dbgDBTableViewINSEMP: TcxGridDBColumn
+          Caption = 'Inscri'#231#227'o'
+          DataBinding.FieldName = 'INSEMP'
+          PropertiesClassName = 'TcxMaskEditProperties'
+          Width = 110
+        end
+        object dbgDBTableViewINSESTEMP: TcxGridDBColumn
+          Caption = 'Inscri'#231#227'o Estadual'
+          DataBinding.FieldName = 'INSESTEMP'
+          PropertiesClassName = 'TcxMaskEditProperties'
+          Width = 102
+        end
+        object dbgDBTableViewSTSEMP: TcxGridDBColumn
+          DataBinding.FieldName = 'STSEMP'
+          PropertiesClassName = 'TcxMaskEditProperties'
+          Visible = False
+          Width = 45
+        end
+      end
+      object dbgLevel: TcxGridLevel
+        GridView = dbgDBTableView
+      end
+    end
+  end
+  inherited acl: TActionList
+    inherited actConfirm: TAction
+      ShortCut = 13
+    end
+  end
+  object cdsEmpresa: TClientDataSet
+    Aggregates = <>
+    Params = <>
+    Left = 128
+    Top = 128
+  end
+  object dtsEmpresa: TDataSource
+    AutoEdit = False
+    DataSet = cdsEmpresa
+    Left = 160
+    Top = 128
+  end
+  object TronAccess: TTronAccess
+    Area = 0
+    CodEmp = 0
+    EmpField = 'CODEMP'
+    UserCode = 0
+    MenuItens = <>
+    PreferenceTable = 'TBLPRE'
+    TronServerInactive = False
+    Left = 240
+    Top = 144
+  end
+end
+

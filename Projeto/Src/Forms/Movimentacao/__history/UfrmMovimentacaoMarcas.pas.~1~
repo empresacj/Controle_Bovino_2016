@@ -1,0 +1,24 @@
+unit UfrmMovimentacaoMarcas;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, Movimentacao, TabListN, DB, Buttons, ExtCtrls;
+
+type
+  TfrmMovimentacaoMarcas = class(TfrmMovimentacao)
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frmMovimentacaoMarcas: TfrmMovimentacaoMarcas;
+
+implementation
+
+{$R *.dfm}
+
+end.

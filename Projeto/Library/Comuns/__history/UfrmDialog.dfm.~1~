@@ -1,0 +1,109 @@
+object FormDialog: TFormDialog
+  Left = 0
+  Top = 0
+  BorderStyle = bsNone
+  Caption = 'FormDialog'
+  ClientHeight = 163
+  ClientWidth = 200
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnClose = FormClose
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Panel1: TPanel
+    Left = 0
+    Top = 0
+    Width = 200
+    Height = 163
+    Align = alClient
+    BevelInner = bvLowered
+    BevelWidth = 2
+    Caption = 'Panel1'
+    ParentColor = True
+    TabOrder = 0
+    ExplicitWidth = 434
+    ExplicitHeight = 320
+    object pnlHeader: TJvNavPanelHeader
+      Left = 4
+      Top = 4
+      Width = 192
+      Height = 23
+      Align = alTop
+      Caption = 'pnlHeader'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ColorFrom = clGray
+      ColorTo = clSilver
+      ImageIndex = 0
+      ExplicitWidth = 426
+      DesignSize = (
+        192
+        23)
+      object btnClose: TJvSpeedButton
+        Left = 172
+        Top = 3
+        Width = 17
+        Height = 17
+        Action = actClose
+        Anchors = [akTop, akRight]
+        Flat = True
+        Glyph.Data = {
+          36030000424D3603000000000000360000002800000010000000100000000100
+          1800000000000003000000000000000000000000000000000000CCCCCC504B41
+          504B41504B41504B41504B41504B41504B41504B41504B41504B41504B41504B
+          41504B41504B41504B419D9D9D504B419D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D
+          9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D504B419D9D9D504B41
+          CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+          CCCCCCCC9D9D9D504B419D9D9D504B41ABABAB9D9D9D69655E504B41615D55C9
+          C9C9A4A4A49C9C9B5E5A51504B4174716ACCCCCC9D9D9D504B419D9D9D504B41
+          C6C6C69F9F9F939392544F46504B41918F8B9D9D9D817F7B504B41534E44BBBA
+          B9CCCCCC9D9D9D504B419D9D9D504B41CCCCCCB6B6B69D9D9D7C7A75504B415A
+          554C9999995D5850504B418C8984CCCCCCCCCCCC9D9D9D504B419D9D9D504B41
+          CCCCCCCBCBCBA5A5A59B9B9B605C53504B4168645D504B415F5A51C7C7C7CCCC
+          CCCCCCCC9D9D9D504B419D9D9D504B41CCCCCCCCCCCCC1C1C19D9D9D8B8A8850
+          4B41504B41504B41A3A29ECCCCCCCCCCCCCCCCCC9D9D9D504B419D9D9D504B41
+          CCCCCCCCCCCCC1C1C19D9D9D8B8A88504B41504B41504B41A9A8A5CCCCCCCCCC
+          CCCCCCCC9D9D9D504B419D9D9D504B41CCCCCCCBCBCBA5A5A59B9B9B605B5350
+          4B4166635B504B41625E55C9C8C8CCCCCCCCCCCC9D9D9D504B419D9D9D504B41
+          CCCCCCB6B6B69D9D9D7B7874504B41534E45969595635E56504B41908D88CCCC
+          CCCCCCCC9D9D9D504B419D9D9D504B41C6C6C69F9F9F939392544F45504B4182
+          7F799D9D9D878683504B41544F45BCBBBACCCCCC9D9D9D504B419D9D9D504B41
+          ABABAB9D9D9D67645D504B41544F45C0C0BFA8A8A89D9D9D66625B504B417571
+          6ACCCCCC9D9D9D504B419D9D9D504B41CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+          CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC9D9D9D504B419D9D9D504B41
+          504B41504B41504B41504B41504B41504B41504B41504B41504B41504B41504B
+          41504B41504B41504B419D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D
+          9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9D9DCCCC00}
+        HotTrackFont.Charset = DEFAULT_CHARSET
+        HotTrackFont.Color = clWindowText
+        HotTrackFont.Height = -16
+        HotTrackFont.Name = 'Arial'
+        HotTrackFont.Style = []
+        Transparent = True
+        ExplicitLeft = 414
+      end
+    end
+  end
+  object acl: TActionList
+    Left = 200
+    Top = 144
+    object actClose: TAction
+      ShortCut = 27
+      OnExecute = actCloseExecute
+    end
+    object actConfirm: TAction
+      OnExecute = actConfirmExecute
+    end
+  end
+end

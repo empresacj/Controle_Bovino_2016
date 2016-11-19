@@ -1,0 +1,57 @@
+unit UTronStringList;
+
+interface
+
+uses Classes, DB;
+
+type
+  TTronStringList = class(TStringList)
+  public
+    function IndexOf(const S: string; LocateOptions: TLocateOptions): Integer; overload;
+  end;
+
+implementation
+
+uses SysUtils;
+
+{ TTronStringList }
+
+function TTronStringList.IndexOf(const S: string;
+  LocateOptions: TLocateOptions): Integer;
+var
+  sItem, sStr: string;
+begin
+  // Se não passou nenhum parâmetro, executa o método padrão
+  if LocateOptions = [] then
+   Result := Self.IndexOf(s)
+  else
+   begin
+    for Result := 0 to Self.Count - 1 do
+     begin
+      // Verificando se a pesquisa é CaseInsensitve
+      if loCaseInsensitive in LocateOptions then
+       begin
+        sItem := Uppercase(Self[Result]);
+        sStr  := Uppercase(S);
+       end
+      else
+       begin
+        sItem := Self[Result];
+        sStr  := S;
+       end;
+
+      // Verificando se é a busca deve ser feita pela chave parcial
+      if loPartialKey in LocateOptions then
+       begin
+        if Copy(sItem, 1, Length(sStr)) = sStr then
+         Exit;
+       end
+      else if CompareStrings(sItem, sStr) = 0 then Exit;
+     end;
+
+    Result := -1;
+   end;
+
+end;
+
+end.

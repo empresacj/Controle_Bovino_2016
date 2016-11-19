@@ -1,0 +1,36 @@
+program Bovino;
+
+uses
+  Forms,
+  UfrmSplash in '..\Src\Forms\UfrmSplash.pas' {frmSplash},
+  UfrmPrincipalBovino in '..\Src\Forms\UfrmPrincipalBovino.pas' {frmPrincipalBovino},
+  Cadastro in '..\Library\Class Cad\Cadastro.pas' {frmCadastro},
+  Movimentacao in '..\Library\Class Cad\Movimentacao.pas' {frmMovimentacao},
+  UDicionario in '..\Library\Comuns\UDicionario.pas',
+  UIntObserver in '..\Library\Comuns\UIntObserver.pas',
+  UMesAno in '..\Library\Comuns\UMesAno.pas',
+  UPersistentObject in '..\Library\Comuns\UPersistentObject.pas',
+  UPersistentObjectDBX in '..\Library\Comuns\UPersistentObjectDBX.pas',
+  USistemaException in '..\Library\Comuns\USistemaException.pas',
+  UControle in '..\Library\Controladores\UControle.pas',
+  USistemaControle in '..\Library\Controladores\USistemaControle.pas',
+  UCdsFunctions in '..\Library\Functions\UCdsFunctions.pas',
+  UDateTimeFunctions in '..\Library\Functions\UDateTimeFunctions.pas',
+  UDBFunctions in '..\Library\Functions\UDBFunctions.pas',
+  UDialogFunctions in '..\Library\Functions\UDialogFunctions.pas',
+  UMsgFunctions in '..\Library\Functions\UMsgFunctions.pas',
+  UNumberFunctions in '..\Library\Functions\UNumberFunctions.pas',
+  UObjectFunctions in '..\Library\Functions\UObjectFunctions.pas',
+  URegFunctions in '..\Library\Functions\URegFunctions.pas',
+  USistemaFunctions in '..\Library\Functions\USistemaFunctions.pas',
+  UStringFunctions in '..\Library\Functions\UStringFunctions.pas',
+  UdbExpressFunctions in '..\Library\Functions\UdbExpressFunctions.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TfrmSplash, frmSplash);
+  Application.Run;
+end.
